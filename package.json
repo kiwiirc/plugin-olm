@@ -1,0 +1,26 @@
+{
+	"name": "e2e-poc",
+	"version": "0.1.0",
+	"main": "src/index.js",
+	"author": "Jason Papakostas <vithos@gmail.com>",
+	"license": "UNLICENSED",
+	"private": true,
+	"scripts": {
+		"build": "babel src -d lib --source-maps"
+	},
+	"dependencies": {
+		"chalk": "^2.3.2",
+		"date-fns": "^1.29.0",
+		"haikunator": "^2.0.0",
+		"hsluv": "^0.0.3",
+		"irc-framework": "^2.11.0",
+		"lodash": "^4.17.5",
+		"olm": "https://matrix.org/packages/npm/olm/olm-2.2.2.tgz"
+	},
+	"devDependencies": {
+		"@babel/cli": "^7.0.0-beta.44",
+		"@babel/core": "^7.0.0-beta.44",
+		"@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.44",
+		"@babel/preset-env": "^7.0.0-beta.44"
+	}
+}
