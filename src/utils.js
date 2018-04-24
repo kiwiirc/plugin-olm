@@ -1,4 +1,4 @@
-export default function awaitMessage(ircClient, matcher) {
+export function awaitMessage(ircClient, matcher) {
 	return new Promise(resolve => {
 		const { connection } = ircClient
 
