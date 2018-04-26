@@ -1,4 +1,4 @@
-import IRC from "irc-framework"
+import IRC from 'irc-framework'
 import Haikunator from 'haikunator'
 import getRange from 'get-range'
 import { format } from 'date-fns'
