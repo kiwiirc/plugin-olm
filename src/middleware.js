@@ -31,7 +31,9 @@ export default function olmMiddleware() {
 				const identityKey = getOwnIdentityKeys().curve25519
 				const response = new IRC.Message(COMMANDS.TAGMSG, nick)
 				response.tags[TAGS.OLM_IDENTITY] = identityKey
-				response.tags[TAGS.REPLY] = tags[TAGS.MSGID]
+				if (has(tags, TAGS.MSGID)) {
+					response.tags[TAGS.REPLY] = tags[TAGS.MSGID]
+				}
 				client.raw(response)
 
 				return next()
@@ -45,7 +47,9 @@ export default function olmMiddleware() {
 
 				const response = new IRC.Message(COMMANDS.TAGMSG, nick)
 				response.tags[TAGS.OLM_ONETIMEKEY] = key
-				response.tags[TAGS.REPLY] = tags[TAGS.MSGID]
+				if (has(tags, TAGS.MSGID)) {
+					response.tags[TAGS.REPLY] = tags[TAGS.MSGID]
+				}
 				client.raw(response)
 
 				return next()
