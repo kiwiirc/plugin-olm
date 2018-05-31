@@ -7,22 +7,45 @@
 	"private": true,
 	"scripts": {
 		"build": "babel src -d lib --source-maps",
-		"start": "node lib/demo.js"
+		"watch": "babel src -d lib --source-maps --watch",
+		"start": "yarn build && node lib/group-demo.js",
+		"test": "ava"
 	},
 	"dependencies": {
-		"chalk": "^2.4.0",
+		"autobind-decorator": "^2.1.0",
+		"binary-string": "^1.0.0",
+		"buffer": "^5.1.0",
+		"cbor": "^4.1.0",
+		"chalk": "^2.4.1",
 		"date-fns": "^1.29.0",
+		"events": "^3.0.0",
 		"get-range": "^1.0.0",
 		"haikunator": "^2.0.0",
 		"hsluv": "^0.0.3",
-		"irc-framework": "https://github.com/vith/irc-framework.git#fix-shadowed-this",
-		"lodash": "^4.17.5",
-		"olm": "https://matrix.org/packages/npm/olm/olm-2.2.2.tgz"
+		"irc-framework": "github:vith/irc-framework#fix-messagetag-parsing",
+		"lodash": "^4.17.10",
+		"olm": "https://matrix.org/packages/npm/olm/olm-2.2.2.tgz",
+		"voca": "^1.4.0"
 	},
 	"devDependencies": {
 		"@babel/cli": "^7.0.0-beta.46",
 		"@babel/core": "^7.0.0-beta.46",
+		"@babel/node": "^7.0.0-beta.51",
+		"@babel/plugin-proposal-class-properties": "^7.0.0-beta.49",
+		"@babel/plugin-proposal-decorators": "^7.0.0-beta.49",
 		"@babel/plugin-proposal-object-rest-spread": "^7.0.0-beta.46",
-		"@babel/preset-env": "^7.0.0-beta.46"
+		"@babel/plugin-syntax-decorators": "^7.0.0-beta.49",
+		"@babel/preset-env": "^7.0.0-beta.46",
+		"@babel/register": "^7.0.0-beta.49",
+		"ava": "1.0.0-beta.5.1",
+		"babel-eslint": "^8.0.2",
+		"babel-plugin-espower": "^3.0.0-beta.1",
+		"deterministic-pseudorandombytes": "^0.1.0",
+		"distinct-colors": "^1.0.4",
+		"eslint": "^4.19.1",
+		"eslint-config-esnext": "^2.0.0",
+		"eslint-plugin-babel": "^5.1.0",
+		"eslint-plugin-import": "^2.8.0",
+		"prettier": "^1.13.4"
 	}
 }

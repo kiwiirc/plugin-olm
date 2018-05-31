@@ -1,12 +1,15 @@
-import IRC from 'irc-framework'
-import Haikunator from 'haikunator'
-import getRange from 'get-range'
-import { format } from 'date-fns'
-import { hsluvToHex } from 'hsluv'
+/* eslint-disable no-console */
+
 import chalk from 'chalk'
-import { has } from 'lodash'
-import { TAGS } from './constants'
+import { format } from 'date-fns'
+import Haikunator from 'haikunator'
+import { hsluvToHex } from 'hsluv'
+import IRC from 'irc-framework'
+import { times } from 'lodash'
 import olmMiddleware from './middleware'
+import { getOtherUsers } from './utils'
+
+chalk.enabled = true
 
 const haikunator = new Haikunator()
 
@@ -16,7 +19,7 @@ function createBot() {
 	const client = new IRC.Client()
 	client.use(olmMiddleware())
 
-	const color = chalk.hex(hsluvToHex([Math.random()*360, 75, 50]))
+	const color = chalk.hex(hsluvToHex([Math.random() * 360, 75, 50]))
 
 	let channel
 
@@ -33,27 +36,24 @@ function createBot() {
 		console.log(color(`${timestamp} ${direction} ${event.line}`))
 	})
 
-	client.on('secure-message', message => {
-		const { nick: source, params, decrypted } = message
-		const [target, jsonData] = params
-		console.log(`${source} ⇶ ${color(target)}: ${decrypted}`)
+	client.on('secure-message', ({ sender, target, text }) => {
+		// const { nick: source, params, decrypted } = message
+		// const [target /* , jsonData */] = params
+		console.log(`${sender} ⇶ ${color(target)}: ${text}`)
 	})
 
 	client.connect({
 		host: 'localhost',
 		port: 6667,
-		nick: haikunator.haikunate()
+		nick: haikunator.haikunate(),
 	})
 
-	function chatter() {
-		const otherUsers = channel.users.filter(user => user.nick !== client.user.nick)
-		for (const user of otherUsers) {
-			client.olm.secureMessage(user.nick, `my favorite number is ${Math.random()}`)
+	async function chatter() {
+		for (const user of getOtherUsers(channel, client)) {
+			client.olm.sendMessage(user.nick, `my favorite number is ${Math.random()}`)
 		}
-		setTimeout(chatter, 5*seconds + Math.random()*5*seconds)
+		setTimeout(chatter, 5 * seconds + Math.random() * 5 * seconds)
 	}
 }
 
-for (const x of getRange(2)) {
-	createBot()
-}
+times(2, createBot)

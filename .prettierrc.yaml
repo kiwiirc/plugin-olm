@@ -1,0 +1,6 @@
+semi: false
+tabs: true
+singleQuote: true
+trailingComma: 'all'
+proseWrap: 'always'
+printWidth: 100
