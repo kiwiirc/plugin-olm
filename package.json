@@ -22,7 +22,7 @@
 		"get-range": "^1.0.0",
 		"haikunator": "^2.0.0",
 		"hsluv": "^0.0.3",
-		"irc-framework": "github:vith/irc-framework#fix-messagetag-parsing",
+		"irc-framework": "github:vith/irc-framework#NetworkInfo.isChannelName",
 		"lodash": "^4.17.10",
 		"olm": "https://matrix.org/packages/npm/olm/olm-2.2.2.tgz",
 		"voca": "^1.4.0"

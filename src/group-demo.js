@@ -23,10 +23,10 @@ function createBot() {
 
 	const color = chalk.hex(palette[created++])
 
-	const channel = client.channel('#megolm-test')
+	const channelName = '#megolm-test'
 
 	client.on('registered', () => {
-		channel.join()
+		client.join(channelName)
 	})
 
 	client.on('userlist', () => {
@@ -52,7 +52,7 @@ function createBot() {
 	})
 
 	function chatter() {
-		client.olm.sendMessage(channel, `my favorite number is ${Math.random()}`)
+		client.olm.sendMessage(channelName, `my favorite number is ${Math.random()}`)
 		setTimeout(chatter, 5 * seconds + Math.random() * 5 * seconds)
 	}
 }

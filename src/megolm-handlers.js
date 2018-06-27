@@ -42,22 +42,3 @@ export function handleMegolmMessage(megolmContext) {
 		client.emit('megolm.message', { sender, target, text })
 	}
 }
-
-export function shareStateOnJoin(megolmContext) {
-	return async function megolmJoinHandler(event) {
-		const { client, getGroupSession } = megolmContext
-		const { nick, channel } = event
-
-		// ignore own joins
-		if (nick === client.user.nick) return
-
-		try {
-			const session = await megolmContext.getGroupSession(channel)
-			session.shareState()
-		} catch (err) {
-			// TODO: channel needs to be an IrcChannel instance, or other refactoring needed
-			// to not depend on IrcChannel userlist in otherUsers()
-			console.error("Couldn't share megolm state:", err)
-		}
-	}
-}

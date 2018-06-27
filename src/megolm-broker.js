@@ -1,11 +1,6 @@
 import autobind from 'autobind-decorator'
 import OutboundGroupSession from './outbound-group-session'
-import {
-	handleMegolmState,
-	handleMegolmPacket,
-	handleMegolmMessage,
-	shareStateOnJoin,
-} from './megolm-handlers'
+import { handleMegolmState, handleMegolmPacket, handleMegolmMessage } from './megolm-handlers'
 
 export default class MegolmBroker {
 	client
@@ -58,7 +53,6 @@ export default class MegolmBroker {
 		rawEvents.use(rawEventsHandler)
 		client.on('olm.packet', handleMegolmState(this))
 		client.on('megolm.packet', handleMegolmMessage(this))
-		client.on('join', shareStateOnJoin(this))
 	}
 
 	addFunctionsToClient() {

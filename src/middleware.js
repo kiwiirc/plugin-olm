@@ -9,7 +9,7 @@ export default function olmMiddleware() {
 		// client.requestCap('echo-message')
 		// client.requestCap('draft/labeled-response')
 
-		const olmBroker = new OlmBroker({ client, rawEvents }) // eslint-disable-line no-unused-vars
+		const olmBroker = new OlmBroker({ client, rawEvents })
 		const megolmBroker = new MegolmBroker({ client, olmBroker, rawEvents }) // eslint-disable-line no-unused-vars
 
 		addFunctionsToClient(client)
@@ -19,13 +19,19 @@ export default function olmMiddleware() {
 		client.olm = {
 			...(client.olm || {}),
 			async sendMessage(target, message) {
-				if (target instanceof IrcChannel /* client.isChannel(target) */) {
+				if (target instanceof IrcChannel) {
+					target = target.name
+				}
+				if (client.network.isChannelName(target)) {
 					return client.olm.sendGroupMessage(target, message)
 				}
 				return client.olm.sendDirectMessage(target, message)
 			},
 			async sendObject(target, object) {
 				if (target instanceof IrcChannel) {
+					target = target.name
+				}
+				if (client.network.isChannelName(target)) {
 					return client.olm.sendGroupObject(target, object)
 				}
 				return client.olm.sendDirectObject(target, object)
