@@ -7,11 +7,12 @@ import { times } from 'lodash'
 import olmMiddleware from './middleware'
 import distinctColors from 'distinct-colors'
 
+const count = 20
+const logRaw = false
+
 const haikunator = new Haikunator()
 
 const seconds = 1000
-
-const count = 2
 
 const palette = distinctColors({ count })
 
@@ -35,11 +36,13 @@ function createBot() {
 		setImmediate(chatter)
 	})
 
-	client.on('raw', event => {
-		const timestamp = format(new Date(), 'hh:mm:ss.SSS')
-		const direction = event.from_server ? '⇦' : '➡'
-		console.log(color(`${timestamp} ${direction} ${event.line}`))
-	})
+	if (logRaw) {
+		client.on('raw', event => {
+			const timestamp = format(new Date(), 'hh:mm:ss.SSS')
+			const direction = event.from_server ? '⇦' : '➡'
+			console.log(color(`${timestamp} ${direction} ${event.line}`))
+		})
+	}
 
 	client.on('megolm.message', ({ sender, target, text }) => {
 		console.log(`${sender} ⇶ ${color(target)} ⇶ ${client.user.nick}: ${text}`)
