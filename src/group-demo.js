@@ -47,7 +47,15 @@ function createBot() {
 	}
 
 	client.on('megolm.message', ({ sender, target, text }) => {
-		console.log(`${sender} ⇶ ${color(target)} ⇶ ${client.user.nick}: ${text}`)
+		console.log(`${sender} ⇶ ${target} ⇶ ${color(client.user.nick)}: ${text}`)
+	})
+
+	client.on('megolm.packet.error', ({ sender, target, error }) => {
+		console.error(`${sender} ⇶ ${target} ⇏ ${color(client.user.nick)} !!! ${error}`)
+	})
+
+	client.on('olm.packet.error', ({ sender, target, error }) => {
+		console.error(`${sender} ⇏ ${color(target)} !!! ${error}`)
 	})
 
 	client.connect({

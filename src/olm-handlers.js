@@ -20,7 +20,13 @@ export function handleOlmPacket(olmBroker) {
 		const packet = deserializeFromMessageTagValue(tags[TAGS.OLM_PACKET])
 		if (!(packet instanceof OlmPacket)) throw new TypeError('not an OlmPacket')
 
-		const payload = packet.decrypt(olmBroker)
+		let payload
+		try {
+			payload = packet.decrypt(olmBroker)
+		} catch (error) {
+			client.emit('olm.packet.error', { sender, target, error })
+			return
+		}
 		const event = { sender, target, payload }
 		client.emit('olm.packet', event)
 	}

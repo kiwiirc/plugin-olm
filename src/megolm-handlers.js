@@ -26,7 +26,13 @@ export function handleMegolmPacket(megolmContext) {
 		const packet = deserializeFromMessageTagValue(tags[TAGS.MEGOLM_PACKET])
 		if (!(packet instanceof MegolmPacket)) throw new TypeError('not a MegolmPacket)')
 
-		const decryptionResult = packet.decrypt(megolmContext)
+		let decryptionResult
+		try {
+			decryptionResult = packet.decrypt(megolmContext)
+		} catch (error) {
+			client.emit('megolm.packet.error', { sender, target, error })
+			return
+		}
 		const { plaintext } = decryptionResult
 		const payload = cborDecode(plaintext)
 		const event = { sender, target, payload }
