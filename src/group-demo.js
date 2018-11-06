@@ -1,4 +1,6 @@
 /* eslint-disable no-console */
+import 'source-map-support/register'
+import 'hard-rejection/register'
 import chalk from 'chalk'
 import { format } from 'date-fns'
 import Haikunator from 'haikunator'
