@@ -23,6 +23,7 @@ export default class MegolmBroker {
 		return session.sendMessage(message)
 	}
 
+	@autobind
 	async getGroupSession(target) {
 		return this.outboundSessions.get(target) || (await this.createGroupSession(target))
 	}
@@ -56,11 +57,12 @@ export default class MegolmBroker {
 	}
 
 	addFunctionsToClient() {
-		const { client, sendGroupMessage } = this
+		const { client, sendGroupMessage, getGroupSession } = this
 
 		client.olm = {
 			...(client.olm || {}),
 			sendGroupMessage,
+			getGroupSession,
 		}
 	}
 }

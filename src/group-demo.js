@@ -4,13 +4,13 @@ import 'hard-rejection/register'
 import chalk from 'chalk'
 import { format } from 'date-fns'
 import Haikunator from 'haikunator'
-import IRC from 'irc-framework'
+import { Client as IrcClient } from 'irc-framework'
 import { times } from 'lodash'
 import olmMiddleware from './middleware'
 import distinctColors from 'distinct-colors'
 
 const count = 20
-const logRaw = false
+const logRaw = true
 
 const haikunator = new Haikunator()
 
@@ -21,7 +21,7 @@ const palette = distinctColors({ count })
 let created = 0
 
 function createBot() {
-	const client = new IRC.Client()
+	const client = new IrcClient()
 	client.use(olmMiddleware())
 
 	const color = chalk.hex(palette[created++])
@@ -32,10 +32,13 @@ function createBot() {
 		client.join(channelName)
 	})
 
-	client.on('userlist', () => {
+	client.on('userlist', event => {
 		// let the internal irc-framework event listeners complete their work so
 		// the channel.users property will be correct
-		setImmediate(chatter)
+		// setTimeout(chatter, 5000)
+		// setTimeout(() => console.log('here we go'), 25000)
+		setImmediate(() => client.olm.getGroupSession(event.channel))
+		setTimeout(chatter, 10000)
 	})
 
 	if (logRaw) {

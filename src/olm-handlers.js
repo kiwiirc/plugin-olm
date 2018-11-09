@@ -1,4 +1,4 @@
-import IRC from 'irc-framework'
+import { Message as IrcMessage } from 'irc-framework'
 import { has } from 'lodash'
 import { COMMANDS, TAGS } from './constants'
 import {
@@ -41,12 +41,12 @@ export function handleOlmIdentityRequest(olmBroker) {
 
 		const identity = new OlmIdentity(olmBroker.getOwnCurve25519IdentityKey())
 
-		const response = new IRC.Message(COMMANDS.TAGMSG, sender)
+		const response = new IrcMessage(COMMANDS.TAGMSG, sender)
 		response.tags[TAGS.OLM_IDENTITY] = serializeToMessageTagValue(identity)
 		if (has(tags, TAGS.MSGID)) {
 			response.tags[TAGS.REPLY] = tags[TAGS.MSGID]
 		}
-		client.raw(response)
+		client.raw(response.to1459()) // HACK: .to1459()
 	}
 }
 
@@ -57,7 +57,7 @@ export function handleOlmOneTimeKeyRequest(olmBroker) {
 
 		const { client } = olmBroker
 
-		const response = new IRC.Message(COMMANDS.TAGMSG, sender)
+		const response = new IrcMessage(COMMANDS.TAGMSG, sender)
 
 		response.tags[TAGS.OLM_ONETIMEKEY] = serializeToMessageTagValue(
 			OlmOneTimeKey.generate(olmBroker.localAccount),
@@ -67,7 +67,7 @@ export function handleOlmOneTimeKeyRequest(olmBroker) {
 			response.tags[TAGS.REPLY] = tags[TAGS.MSGID]
 		}
 
-		client.raw(response)
+		client.raw(response.to1459()) // HACK: .to1459()
 	}
 }
 

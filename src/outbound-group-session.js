@@ -1,5 +1,5 @@
 import cbor from 'cbor'
-import IRC from 'irc-framework'
+import { Message as IrcMessage } from 'irc-framework'
 import Olm from 'olm'
 import { COMMANDS, TAGS } from './constants'
 // import { getOtherUsers } from './utils'
@@ -70,11 +70,11 @@ export default class OutboundGroupSession {
 		const megolmPacket = new MegolmPacket(packet)
 		const serializedPacket = serializeToMessageTagValue(megolmPacket)
 
-		const ircMessage = new IRC.Message(COMMANDS.TAGMSG, channelName)
+		const ircMessage = new IrcMessage(COMMANDS.TAGMSG, channelName)
 
 		ircMessage.tags[TAGS.MEGOLM_PACKET] = serializedPacket
 
-		return client.raw(ircMessage)
+		return client.raw(ircMessage.to1459()) // shouldn't have to explicitly call this method but there's an instanceof check inside .raw that webpack breaks
 	}
 
 	sendMessage(text) {

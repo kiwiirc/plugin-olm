@@ -4,7 +4,7 @@ import chalk from 'chalk'
 import { format } from 'date-fns'
 import Haikunator from 'haikunator'
 import { hsluvToHex } from 'hsluv'
-import IRC from 'irc-framework'
+import { Client as IrcClient } from 'irc-framework'
 import { times } from 'lodash'
 import olmMiddleware from './middleware'
 import { getOtherUsers } from './utils'
@@ -16,7 +16,7 @@ const haikunator = new Haikunator()
 const seconds = 1000
 
 function createBot() {
-	const client = new IRC.Client()
+	const client = new IrcClient()
 	client.use(olmMiddleware())
 
 	const color = chalk.hex(hsluvToHex([Math.random() * 360, 75, 50]))

@@ -1,7 +1,7 @@
 // import assert from 'assert' // eslint-disable-line import/no-nodejs-modules
 
 import autobind from 'autobind-decorator'
-import IRC from 'irc-framework'
+import { Message as IrcMessage } from 'irc-framework'
 import { has } from 'lodash'
 import Olm from 'olm'
 
@@ -96,9 +96,9 @@ export default class OlmBroker {
 	}
 
 	async requestPeerIdentity(target) {
-		const request = new IRC.Message(COMMANDS.TAGMSG, target)
+		const request = new IrcMessage(COMMANDS.TAGMSG, target)
 		request.tags[TAGS.OLM_IDENTITY_REQUEST] = true
-		this.client.raw(request)
+		this.client.raw(request.to1459()) // HACK: .to1459()
 
 		const reply = await awaitMessage(this.client, response => {
 			if (response.command !== COMMANDS.TAGMSG) return false
@@ -113,9 +113,9 @@ export default class OlmBroker {
 	}
 
 	async getPeerOneTimeKey(target) {
-		const request = new IRC.Message(COMMANDS.TAGMSG, target)
+		const request = new IrcMessage(COMMANDS.TAGMSG, target)
 		request.tags[TAGS.OLM_ONETIMEKEY_REQUEST] = true
-		this.client.raw(request)
+		this.client.raw(request.to1459()) // HACK: .to1459()
 
 		const reply = await awaitMessage(this.client, response => {
 			if (
@@ -165,9 +165,9 @@ export default class OlmBroker {
 
 		async function sendDirectObject(target, payload) {
 			const packet = await OlmPacket.encryptNew(payload, target, olmBroker)
-			const ircMessage = new IRC.Message(COMMANDS.TAGMSG, target)
+			const ircMessage = new IrcMessage(COMMANDS.TAGMSG, target)
 			ircMessage.tags[TAGS.OLM_PACKET] = serializeToMessageTagValue(packet)
-			client.raw(ircMessage)
+			client.raw(ircMessage.to1459()) // shouldn't have to explicitly call this method but there's an instanceof check inside .raw that webpack breaks
 		}
 
 		client.olm = {

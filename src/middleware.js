@@ -1,4 +1,4 @@
-import IrcChannel from 'irc-framework/src/channel'
+import { Channel as IrcChannel } from 'irc-framework'
 import { CAPABILITIES } from './constants'
 import MegolmBroker from './megolm-broker'
 import OlmBroker from './olm-broker'
