@@ -44,6 +44,7 @@
 		"babel-eslint": "^10.0.1",
 		"babel-loader": "^8.0.4",
 		"babel-plugin-espower": "^3.0.0",
+		"css-loader": "^1.0.1",
 		"deterministic-pseudorandombytes": "^0.1.0",
 		"distinct-colors": "^1.0.4",
 		"eslint": "^5.8.0",
@@ -53,6 +54,7 @@
 		"hard-rejection": "^1.0.0",
 		"prettier": "^1.15.1",
 		"source-map-support": "^0.5.9",
+		"style-loader": "^0.23.1",
 		"webpack": "^4.25.1",
 		"webpack-cli": "^3.1.2",
 		"webpack-dev-server": "^3.1.10"
