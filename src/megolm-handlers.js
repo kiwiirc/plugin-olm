@@ -24,7 +24,7 @@ export function handleMegolmPacket(megolmContext) {
 
 		const { client } = megolmContext
 		const packet = deserializeFromMessageTagValue(tags[TAGS.MEGOLM_PACKET])
-		if (!(packet instanceof MegolmPacket)) throw new TypeError('not a MegolmPacket)')
+		if (!(packet instanceof MegolmPacket)) throw new TypeError('not a MegolmPacket')
 
 		let decryptionResult
 		try {
