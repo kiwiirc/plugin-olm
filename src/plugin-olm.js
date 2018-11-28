@@ -5,9 +5,19 @@ import './styles.css'
 
 kiwi.plugin('olm', (client /* , log */) => {
 	// add button to input bar
-	const e2eToggleButton = document.createElement('i')
-	e2eToggleButton.className = 'e2e-toggle-button fa fa-user-secret'
-	client.addUi('input', e2eToggleButton)
+	const inputBarUI = document.createElement('span')
+	inputBarUI.className = 'plugin-olm-inputbar-ui'
+
+	const icon = document.createElement('i')
+	icon.className = 'fa fa-user-secret'
+	inputBarUI.appendChild(icon)
+
+	const syncStatus = document.createElement('span')
+	syncStatus.className = 'sync-status'
+	syncStatus.innerText = '?/?'
+	inputBarUI.appendChild(syncStatus)
+
+	client.addUi('input', inputBarUI)
 
 	client.on('network.new', newNetworkEvent => {
 		const { network } = newNetworkEvent
@@ -40,6 +50,10 @@ kiwi.plugin('olm', (client /* , log */) => {
 
 		ircClient.on('join', event => {
 			ircClient.olm.getGroupSession(event.channel)
+		})
+
+		ircClient.on('megolm.sync.status', ({ channel, syncedCount, totalCount }) => {
+			syncStatus.innerText = `${syncedCount}/${totalCount}`
 		})
 	})
 

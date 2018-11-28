@@ -14,6 +14,7 @@ export default class OutboundGroupSession {
 	channelName
 	// olmBroker
 	syncedPeers = new Set()
+	unsyncedPeers = new Set()
 
 	constructor(client, channelName, olmBroker) {
 		// store args
@@ -25,17 +26,56 @@ export default class OutboundGroupSession {
 		const session = new Olm.OutboundGroupSession()
 		session.create()
 		this.session = session
-		// this.shareState()
-		client.on('userlist', this.onUserlist)
-		client.on('join', this.onJoin)
-		client.raw('names', channelName)
+		this.client.on('join', this.onJoin)
+		this.shareState()
+	}
+
+	shareState() {
+		this.client.once('userlist', this.onUserlist)
+		this.client.raw('names', this.channelName)
 	}
 
 	@autobind
 	onUserlist(event) {
+		const { channel } = event
+
+		let syncStatusChanged = false
+
+		// add all unsynced users to queue
 		for (const user of event.users) {
-			this.shareStateWith(user.nick)
+			// skip self
+			if (this.client.user.nick === user.nick) continue
+
+			if (!this.syncedPeers.has(user.nick)) {
+				this.unsyncedPeers.add(user.nick)
+				syncStatusChanged = true
+			}
 		}
+
+		if (syncStatusChanged) {
+			this.emitSyncStatus()
+		}
+
+		for (const nick of this.unsyncedPeers) {
+			// TODO: queue
+			this.shareStateWith(nick)
+		}
+	}
+
+	@autobind
+	emitSyncStatus() {
+		const syncedCount = this.syncedPeers.size
+		const totalCount = syncedCount + this.unsyncedPeers.size
+
+		const payload = {
+			channel: this.channelName,
+			syncedCount,
+			totalCount,
+		}
+
+		this.client.emit('megolm.sync.status', payload)
+
+		console.log('megolm.sync.status', payload)
 	}
 
 	@autobind
@@ -46,14 +86,19 @@ export default class OutboundGroupSession {
 		// ignore already synced peers
 		if (this.syncedPeers.has(event.nick)) return
 
+		this.unsyncedPeers.add(event.nick)
+		this.emitSyncStatus()
 		this.shareStateWith(event.nick)
 	}
 
-	shareStateWith(nick) {
-		const { client, syncedPeers, session } = this
+	async shareStateWith(nick) {
+		const { client, syncedPeers, unsyncedPeers, session, emitSyncStatus } = this
 		const state = MegolmSessionState.newFromSession(session)
-		client.olm.sendObject(nick, state)
+		await client.olm.sendObject(nick, state)
+		unsyncedPeers.delete(nick)
 		syncedPeers.add(nick)
+
+		emitSyncStatus()
 	}
 
 	sendObject(object) {
