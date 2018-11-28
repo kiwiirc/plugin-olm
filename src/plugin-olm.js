@@ -37,6 +37,10 @@ kiwi.plugin('olm', (client /* , log */) => {
 				type_extra: 'decryption-error',
 			})
 		})
+
+		ircClient.on('join', event => {
+			ircClient.olm.getGroupSession(event.channel)
+		})
 	})
 
 	client.on('input.command.msg', event => {
