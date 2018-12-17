@@ -5,10 +5,6 @@ import OlmBroker from './olm-broker'
 
 export default function olmMiddleware() {
 	return function middleware(client, rawEvents /* , parsedEvents */) {
-		client.requestCap(CAPABILITIES.MESSAGE_TAGS)
-		// client.requestCap('echo-message')
-		// client.requestCap('draft/labeled-response')
-
 		const olmBroker = new OlmBroker({ client, rawEvents })
 		const megolmBroker = new MegolmBroker({ client, olmBroker, rawEvents }) // eslint-disable-line no-unused-vars
 

@@ -35,7 +35,7 @@ export default class OlmPacket {
 			encryptionResult: { type, body },
 		} = this
 		const session = olmContext.getOrCreateSessionFromPacket(this)
-		const decryptedBytes = session.decrypt(type, body, true)
+		const decryptedBytes = session.decrypt(type, body, Uint8Array)
 		const deserialized = cborDecode(decryptedBytes)
 		return deserialized
 	}

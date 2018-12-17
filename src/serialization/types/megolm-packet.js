@@ -27,7 +27,7 @@ export default class MegolmPacket {
 		if (!session) {
 			throw new Error('Cannot decrypt message: unknown session')
 		}
-		const decrypted = session.decrypt(ciphertext, true)
+		const decrypted = session.decrypt(ciphertext, Uint8Array)
 		return decrypted
 	}
 

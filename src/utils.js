@@ -109,3 +109,11 @@ export function toUnpaddedBase64(data) {
 
 	throw new TypeError('data must be a base64 encoded string, TypedArray, or Buffer')
 }
+
+export function timeout(seconds, error) {
+	return new Promise((resolve, reject) => {
+		setTimeout(() => {
+			reject(error || new Error('Timeout expired'))
+		}, seconds * 1000)
+	})
+}

@@ -1,9 +1,19 @@
 /* global kiwi */
-
+import Olm from 'olm'
 import olmMiddleware from './middleware'
 import './styles.css'
+import { CAPABILITIES } from './constants'
 
-kiwi.plugin('olm', (client /* , log */) => {
+kiwi.on('network.new', newNetworkEvent => {
+	const client = newNetworkEvent.network.ircClient
+	client.requestCap(CAPABILITIES.MESSAGE_TAGS)
+	client.requestCap('echo-message')
+	// client.requestCap('draft/labeled-response')
+})
+
+kiwi.plugin('olm', async (client /* , log */) => {
+	await Olm.init()
+
 	// add button to input bar
 	const inputBarUI = document.createElement('span')
 	inputBarUI.className = 'plugin-olm-inputbar-ui'
@@ -21,6 +31,15 @@ kiwi.plugin('olm', (client /* , log */) => {
 
 	client.on('network.new', newNetworkEvent => {
 		const { network } = newNetworkEvent
+		handleNewNetwork(network)
+	})
+
+	// the client will sometimes create networks before plugins can load
+	for (const network of client.state.networks) {
+		handleNewNetwork(network)
+	}
+
+	function handleNewNetwork(network) {
 		const { ircClient } = network
 		ircClient.use(olmMiddleware())
 
@@ -55,7 +74,7 @@ kiwi.plugin('olm', (client /* , log */) => {
 		ircClient.on('megolm.sync.status', ({ channel, syncedCount, totalCount }) => {
 			syncStatus.innerText = `${syncedCount}/${totalCount}`
 		})
-	})
+	}
 
 	client.on('input.command.msg', event => {
 		const plaintext = event.raw

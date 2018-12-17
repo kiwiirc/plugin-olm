@@ -15,9 +15,13 @@ export const TAGS = {
 	MEGOLM_PACKET: '+kiwi/megolm-packet',
 	MEGOLM_MESSAGE: '+kiwi/megolm-message',
 
+	FRAGMENTED: '+kiwi/frag',
+	PREVIOUS_FRAGMENT: '+kiwi/prev-frag',
+
 	MSGID: 'draft/msgid',
 	LABEL: '+draft/label',
 	REPLY: '+draft/reply',
+	TIME: 'time',
 }
 
 export const CAPABILITIES = {
