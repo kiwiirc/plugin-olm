@@ -8,7 +8,7 @@ kiwi.on('network.new', newNetworkEvent => {
 	const client = newNetworkEvent.network.ircClient
 	client.requestCap(CAPABILITIES.MESSAGE_TAGS)
 	client.requestCap('echo-message')
-	// client.requestCap('draft/labeled-response')
+	client.requestCap('draft/labeled-response')
 })
 
 kiwi.plugin('olm', async (client /* , log */) => {

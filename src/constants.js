@@ -19,8 +19,8 @@ export const TAGS = {
 	PREVIOUS_FRAGMENT: '+kiwi/prev-frag',
 
 	MSGID: 'draft/msgid',
-	LABEL: '+draft/label',
-	REPLY: '+draft/reply',
+	LABEL: 'draft/label',
+	REPLY: 'draft/reply',
 	TIME: 'time',
 }
 
