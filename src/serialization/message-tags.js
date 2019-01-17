@@ -1,6 +1,6 @@
 import cbor from 'cbor'
 import cborDecode from './cbor-decoder'
-import { toUnpaddedBase64 } from '../utils'
+import { toUnpaddedBase64 } from '../utils/toUnpaddedBase64'
 
 export function serializeToMessageTagValue(object) {
 	const encodedBuffer = cbor.encode(object)

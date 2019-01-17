@@ -1,7 +1,9 @@
 import { Tagged } from 'cbor'
 
 import CBOR from '../constants'
-import { toByteArray, toUnpaddedBase64, toBuffer } from '../../utils'
+import { toUnpaddedBase64 } from '../../utils/toUnpaddedBase64'
+import { toBuffer } from '../../utils/toBuffer'
+import { toByteArray } from '../../utils/toByteArray'
 import { mapValues } from 'lodash'
 
 export default class MegolmPacket {

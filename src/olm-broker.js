@@ -19,25 +19,22 @@ import {
 import OlmMessage from './serialization/types/olm-message'
 import OlmOneTimeKey from './serialization/types/olm-onetimekey'
 import OlmPacket from './serialization/types/olm-packet'
-import { awaitMessage } from './utils'
+import { awaitMessage } from './utils/awaitMessage'
+import sendMaybeFragmented from './fragmentation/send-maybe-fragmented'
 
 export default class OlmBroker {
 	client
+	defragmentedMessages
 	localAccount = new Olm.Account()
 	sessions = new Map()
 	peerIdentities = new Map()
-	rawHandlers
 
-	constructor({ client, rawEvents }) {
+	constructor({ client, defragmentedMessages }) {
 		this.client = client
+		this.defragmentedMessages = defragmentedMessages
 		this.localAccount.create()
-		this.registerEventListeners(rawEvents)
+		this.registerEventListeners()
 		this.addFunctionsToClient()
-		this.rawHandlers = [
-			handleOlmPacket,
-			handleOlmIdentityRequest,
-			handleOlmOneTimeKeyRequest,
-		].map(handler => handler(this))
 	}
 
 	sign(message) {
@@ -135,24 +132,20 @@ export default class OlmBroker {
 		return otkObj.oneTimeKeyBase64
 	}
 
-	@autobind
-	rawEventsHandler(command, message, rawLine, client, next) {
-		const {
-			nick: sender,
-			tags,
-			params: [target, text],
-		} = message
+	registerEventListeners() {
+		const { defragmentedMessages, client } = this
 
-		for (const handler of this.rawHandlers) {
-			handler({ sender, tags, command, target, text, client, rawLine })
+		const messageHandlers = [
+			handleOlmPacket,
+			handleOlmIdentityRequest,
+			handleOlmOneTimeKeyRequest,
+		]
+
+		for (const handler of messageHandlers) {
+			defragmentedMessages.subscribe(handler(this))
 		}
 
-		next()
-	}
-
-	registerEventListeners(rawEvents) {
-		rawEvents.use(this.rawEventsHandler)
-		this.client.on('olm.packet', handleOlmMessage(this))
+		client.on('olm.packet', handleOlmMessage(this))
 	}
 
 	addFunctionsToClient() {
@@ -160,14 +153,14 @@ export default class OlmBroker {
 		const olmBroker = this
 
 		async function sendDirectMessage(target, message) {
-			sendDirectObject(target, new OlmMessage(message))
+			return sendDirectObject(target, new OlmMessage(message))
 		}
 
 		async function sendDirectObject(target, payload) {
 			const packet = await OlmPacket.encryptNew(payload, target, olmBroker)
 			const ircMessage = new IrcMessage(COMMANDS.TAGMSG, target)
 			ircMessage.tags[TAGS.OLM_PACKET] = serializeToMessageTagValue(packet)
-			client.raw(ircMessage.to1459()) // shouldn't have to explicitly call this method but there's an instanceof check inside .raw that webpack breaks
+			return sendMaybeFragmented(ircMessage, client)
 		}
 
 		client.olm = {

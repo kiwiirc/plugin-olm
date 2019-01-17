@@ -43,6 +43,18 @@ kiwi.plugin('olm', async (client /* , log */) => {
 		const { ircClient } = network
 		ircClient.use(olmMiddleware())
 
+		ircClient.on('olm.message', ({ sender, target, text }) => {
+			const buffer = kiwi.state.getOrAddBufferByName(network.id, sender)
+
+			buffer.state.addMessage(buffer, {
+				time: Date.now(),
+				nick: sender,
+				message: text,
+				type: 'privmsg',
+				type_extra: 'encrypted',
+			})
+		})
+
 		ircClient.on('megolm.message', ({ sender, target, text }) => {
 			const buffer = network.bufferByName(target)
 
@@ -76,7 +88,7 @@ kiwi.plugin('olm', async (client /* , log */) => {
 		})
 	}
 
-	client.on('input.command.msg', event => {
+	client.on('input.command.msg', async event => {
 		const plaintext = event.raw
 		if (plaintext.startsWith('/')) return // don't intercept /msg as command
 
@@ -86,7 +98,7 @@ kiwi.plugin('olm', async (client /* , log */) => {
 		const target = buffer.name
 		const net = client.state.getActiveNetwork()
 
-		net.ircClient.olm.sendMessage(target, plaintext)
+		await net.ircClient.olm.sendMessage(target, plaintext)
 
 		buffer.state.addMessage(buffer, {
 			time: Date.now(),

@@ -2,11 +2,13 @@ import { Channel as IrcChannel } from 'irc-framework'
 import { CAPABILITIES } from './constants'
 import MegolmBroker from './megolm-broker'
 import OlmBroker from './olm-broker'
+import createDefragmentedMessageSource from './fragmentation/reassembled-messages'
 
 export default function olmMiddleware() {
-	return function middleware(client, rawEvents /* , parsedEvents */) {
-		const olmBroker = new OlmBroker({ client, rawEvents })
-		const megolmBroker = new MegolmBroker({ client, olmBroker, rawEvents }) // eslint-disable-line no-unused-vars
+	return function middleware(client /* rawEvents, parsedEvents */) {
+		const defragmentedMessages = createDefragmentedMessageSource(client)
+		const olmBroker = new OlmBroker({ client, defragmentedMessages })
+		const megolmBroker = new MegolmBroker({ client, olmBroker, defragmentedMessages }) // eslint-disable-line no-unused-vars
 
 		addFunctionsToClient(client)
 	}

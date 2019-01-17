@@ -4,7 +4,6 @@ export const COMMANDS = {
 }
 
 export const TAGS = {
-	OLM_MESSAGE: '+kiwi/olm-message',
 	OLM_PACKET: '+kiwi/olm-packet',
 	OLM_IDENTITY_REQUEST: '+kiwi/olm-identity-request',
 	OLM_IDENTITY: '+kiwi/olm-identity',
@@ -13,7 +12,6 @@ export const TAGS = {
 
 	MEGOLM_STATE: '+kiwi/megolm-state',
 	MEGOLM_PACKET: '+kiwi/megolm-packet',
-	MEGOLM_MESSAGE: '+kiwi/megolm-message',
 
 	FRAGMENTED: '+kiwi/frag',
 	PREVIOUS_FRAGMENT: '+kiwi/prev-frag',

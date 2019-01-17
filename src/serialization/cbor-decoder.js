@@ -1,5 +1,5 @@
 import { Decoder } from 'cbor'
-import { toBuffer } from '../utils'
+import { toBuffer } from '../utils/toBuffer'
 import * as types from './types' // eslint-disable-line import/no-namespace
 
 const decoderMap = Object.values(types).reduce(

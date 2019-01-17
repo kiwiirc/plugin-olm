@@ -1,7 +1,9 @@
 import cbor, { Tagged } from 'cbor'
 import Olm from 'olm'
 
-import { toBuffer, toByteArray, toUnpaddedBase64 } from '../../utils'
+import { toUnpaddedBase64 } from '../../utils/toUnpaddedBase64'
+import { toBuffer } from '../../utils/toBuffer'
+import { toByteArray } from '../../utils/toByteArray'
 import CBOR from '../constants'
 import cborDecode from '../cbor-decoder'
 

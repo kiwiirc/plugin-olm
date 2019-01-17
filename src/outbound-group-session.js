@@ -1,7 +1,6 @@
 import cbor from 'cbor'
 import { Message as IrcMessage } from 'irc-framework'
 import Olm from 'olm'
-import { has } from 'lodash'
 import { COMMANDS, TAGS } from './constants'
 // import { getOtherUsers } from './utils'
 import MegolmMessage from './serialization/types/megolm-message'
@@ -9,18 +8,8 @@ import MegolmPacket from './serialization/types/megolm-packet'
 import { serializeToMessageTagValue } from './serialization/message-tags'
 import MegolmSessionState from './serialization/types/megolm-session-state'
 import autobind from 'autobind-decorator'
-import { toUnpaddedBase64, awaitMessage } from './utils'
-import FragmentGenerator from './fragment-generator'
-
-// TODO: make this math more accurate, considering all the tags that the server will add?
-// also check if there's a capability that advertises a beyond-spec max length
-const MEGOLM_PACKET_VALUE_MAX_LENGTH = 512 - (`@${TAGS.MEGOLM_PACKET}=`.length + ' '.length)
-
-const LABEL_ID_LENGTH = 16
-
-const SPLIT_MEGOLM_PACKET_VALUE_MAX_LENGTH =
-	512 -
-	(`@${TAGS.MEGOLM_SPLIT_PACKET}=`.length + `;@label=`.length + LABEL_ID_LENGTH + ' '.length)
+import { toUnpaddedBase64 } from './utils/toUnpaddedBase64'
+import sendMaybeFragmented from './fragmentation/send-maybe-fragmented'
 
 export default class OutboundGroupSession {
 	client
@@ -87,8 +76,6 @@ export default class OutboundGroupSession {
 		}
 
 		this.client.emit('megolm.sync.status', payload)
-
-		console.log('megolm.sync.status', payload)
 	}
 
 	@autobind
@@ -128,62 +115,15 @@ export default class OutboundGroupSession {
 		const megolmPacket = new MegolmPacket(packet)
 		const serializedPacket = serializeToMessageTagValue(megolmPacket)
 
-		if (serializedPacket.length > MEGOLM_PACKET_VALUE_MAX_LENGTH) {
-			return this.sendFragmented(serializedPacket)
-		}
-
 		const ircMessage = new IrcMessage(COMMANDS.TAGMSG, channelName)
 
 		ircMessage.tags[TAGS.MEGOLM_PACKET] = serializedPacket
 
-		return client.raw(ircMessage.to1459()) // shouldn't have to explicitly call this method but there's an instanceof check inside .raw that webpack breaks
-	}
-
-	async sendFragmented(serializedPacket) {
-		const { channelName } = this
-		let previousMsgID
-		const fragmentGenerator = new FragmentGenerator(serializedPacket)
-		while (fragmentGenerator.more) {
-			const chunk = fragmentGenerator.next(SPLIT_MEGOLM_PACKET_VALUE_MAX_LENGTH)
-			const labelID = generateLabelID()
-			const ircMessage = new IrcMessage(COMMANDS.TAGMSG, channelName)
-			ircMessage.tags[TAGS.MEGOLM_PACKET] = chunk
-			ircMessage.tags[TAGS.LABEL] = labelID
-			if (fragmentGenerator.more) {
-				ircMessage.tags[TAGS.FRAGMENTED] = true
-			}
-			if (previousMsgID) {
-				ircMessage.tags[TAGS.PREVIOUS_FRAGMENT] = previousMsgID
-			}
-
-			const echoPromise = awaitMessage(
-				this.client,
-				msg => has(msg.tags, TAGS.LABEL) && msg.tags[TAGS.LABEL] === labelID,
-			)
-
-			this.client.raw(ircMessage.to1459()) // HACK
-
-			const echo = await echoPromise
-			previousMsgID = echo.tags[TAGS.MSGID]
-		}
+		return sendMaybeFragmented(ircMessage, client)
 	}
 
 	sendMessage(text) {
 		const message = new MegolmMessage(text)
 		return this.sendObject(message)
 	}
-}
-
-function generateLabelID() {
-	const len = 8
-	let randomBytes
-	if (crypto.randomBytes) {
-		randomBytes = crypto.randomBytes(len)
-	} else if (crypto.getRandomValues) {
-		randomBytes = new Uint8Array(len)
-		crypto.getRandomValues(randomBytes)
-	} else {
-		throw new Error('No crypto.randomBytes or crypto.getRandomValues method available')
-	}
-	return toUnpaddedBase64(randomBytes)
 }

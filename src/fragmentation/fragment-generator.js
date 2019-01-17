@@ -10,6 +10,10 @@ export default class FragmentGenerator {
 		return this.str.length > this.offset
 	}
 
+	get remaining() {
+		return this.str.length - this.offset
+	}
+
 	next(len) {
 		const offset = this.offset
 		this.offset += len

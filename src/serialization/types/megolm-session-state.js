@@ -1,6 +1,8 @@
 import CBOR_TAGS from '../constants'
 import { Tagged } from 'cbor'
-import { toByteArray, toBuffer, toUnpaddedBase64 } from '../../utils'
+import { toUnpaddedBase64 } from '../../utils/toUnpaddedBase64'
+import { toBuffer } from '../../utils/toBuffer'
+import { toByteArray } from '../../utils/toByteArray'
 
 export default class MegolmSessionState {
 	static CBOR_TAG = CBOR_TAGS.MEGOLM_SESSION_STATE

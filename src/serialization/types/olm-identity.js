@@ -1,5 +1,7 @@
 import { Tagged } from 'cbor'
-import { toByteArray, toUnpaddedBase64, toBuffer } from '../../utils'
+import { toUnpaddedBase64 } from '../../utils/toUnpaddedBase64'
+import { toBuffer } from '../../utils/toBuffer'
+import { toByteArray } from '../../utils/toByteArray'
 import CBOR_TAGS from '../constants'
 
 export default class OlmIdentity {

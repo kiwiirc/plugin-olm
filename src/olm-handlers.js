@@ -10,8 +10,20 @@ import OlmPacket from './serialization/types/olm-packet'
 import OlmIdentity from './serialization/types/olm-identity'
 import OlmMessage from './serialization/types/olm-message'
 
+export function normalizeEvent(handler) {
+	return function normalizingWrapper(event) {
+		const {
+			nick: sender,
+			tags,
+			command,
+			params: [target, text],
+		} = event
+		return handler({ sender, tags, command, target, text })
+	}
+}
+
 export function handleOlmPacket(olmBroker) {
-	return function olmPacketHandler({ sender, tags, command, target }) {
+	function olmPacketHandler({ sender, tags, command, target, text }) {
 		if (command !== COMMANDS.TAGMSG) return
 		if (!has(tags, TAGS.OLM_PACKET)) return
 
@@ -27,13 +39,16 @@ export function handleOlmPacket(olmBroker) {
 			client.emit('olm.packet.error', { sender, target, error })
 			return
 		}
-		const event = { sender, target, payload }
-		client.emit('olm.packet', event)
+		const packetEvent = { sender, target, payload }
+		client.emit('olm.packet', packetEvent)
 	}
+
+	// return fragmentationHandlingWrapper(olmBroker.client, olmPacketHandler)
+	return normalizeEvent(olmPacketHandler)
 }
 
 export function handleOlmIdentityRequest(olmBroker) {
-	return function olmIdentityRequestHandler({ sender, tags, command }) {
+	function olmIdentityRequestHandler({ sender, tags, command, target, text }) {
 		if (command !== COMMANDS.TAGMSG) return
 		if (!has(tags, TAGS.OLM_IDENTITY_REQUEST)) return
 
@@ -48,10 +63,12 @@ export function handleOlmIdentityRequest(olmBroker) {
 		}
 		client.raw(response.to1459()) // HACK: .to1459()
 	}
+
+	return normalizeEvent(olmIdentityRequestHandler)
 }
 
 export function handleOlmOneTimeKeyRequest(olmBroker) {
-	return function olmOneTimeKeyRequestHandler({ sender, tags, command }) {
+	function olmOneTimeKeyRequestHandler({ sender, tags, command }) {
 		if (command !== COMMANDS.TAGMSG) return
 		if (!has(tags, TAGS.OLM_ONETIMEKEY_REQUEST)) return
 
@@ -69,6 +86,8 @@ export function handleOlmOneTimeKeyRequest(olmBroker) {
 
 		client.raw(response.to1459()) // HACK: .to1459()
 	}
+
+	return normalizeEvent(olmOneTimeKeyRequestHandler)
 }
 
 export function handleOlmMessage(olmBroker) {
@@ -77,6 +96,6 @@ export function handleOlmMessage(olmBroker) {
 
 		const { text } = payload
 
-		olmBroker.client.emit('secure-message', { sender, target, text })
+		olmBroker.client.emit('olm.message', { sender, target, text })
 	}
 }

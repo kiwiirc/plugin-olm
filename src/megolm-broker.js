@@ -1,20 +1,20 @@
 import autobind from 'autobind-decorator'
 import OutboundGroupSession from './outbound-group-session'
-import { handleMegolmState, handleMegolmPacket, handleMegolmMessage } from './megolm-handlers'
+import { handleMegolmState, handleMegolmMessage, handleMegolmPacket } from './megolm-handlers'
 
 export default class MegolmBroker {
 	client
+	defragmentedMessages
 	olmBroker
 	outboundSessions = new Map()
 	inboundSessions = new Map()
-	rawHandlers
 
-	constructor({ client, olmBroker, rawEvents }) {
+	constructor({ client, defragmentedMessages, olmBroker }) {
 		this.client = client
+		this.defragmentedMessages = defragmentedMessages
 		this.olmBroker = olmBroker
-		this.registerEventListeners(rawEvents)
+		this.registerEventListeners()
 		this.addFunctionsToClient()
-		this.rawHandlers = [handleMegolmPacket].map(handler => handler(this))
 	}
 
 	@autobind
@@ -49,9 +49,15 @@ export default class MegolmBroker {
 		next()
 	}
 
-	registerEventListeners(rawEvents) {
-		const { client, rawEventsHandler } = this
-		rawEvents.use(rawEventsHandler)
+	registerEventListeners() {
+		const { client, defragmentedMessages } = this
+
+		const messageHandlers = [handleMegolmPacket]
+
+		for (const handler of messageHandlers) {
+			defragmentedMessages.subscribe(handler(this))
+		}
+
 		client.on('olm.packet', handleMegolmState(this))
 		client.on('megolm.packet', handleMegolmMessage(this))
 	}
