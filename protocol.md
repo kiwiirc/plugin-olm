@@ -188,10 +188,11 @@ we might as well not leak metadata about the nature of the encrypted payload.
 But I stuck with multiple separate Message Tags in an attempt to mesh with the human-readable style
 of the IRC protocol to the extent it was possible.
 
-[matrix.org]: https://matrix.org
-[olm]: https://git.matrix.org/git/olm/about/docs/olm.rst
-[megolm]: https://git.matrix.org/git/olm/about/docs/megolm.rst
+[Matrix.org]: https://matrix.org
+[Olm]: https://git.matrix.org/git/olm/about/docs/olm.rst
+[Megolm]: https://git.matrix.org/git/olm/about/docs/megolm.rst
 [libolm]: https://git.matrix.org/git/olm/about/docs/olm.rst
 [double ratchet algorithm]: https://signal.org/docs/specifications/doubleratchet/
-[signal]: https://signal.org/
-[message tag]: https://ircv3.net/specs/core/message-tags-3.2.html
+[Signal]: https://signal.org/
+[Message Tag]: https://ircv3.net/specs/core/message-tags-3.2.html
+[CBOR]: http://cbor.io/
