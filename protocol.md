@@ -1,10 +1,10 @@
-# Kiwi end-to-end encryption protocol
+# Proposed end-to-end encryption protocol
 
 ## Background
 
-This protocol is an adaptation of [Matrix.org]'s [Olm] and [MegOlm] encryption to the IRC protocol
-using [libolm]. Olm is an implementation of the [double ratchet algorithm] developed by Open Whisper
-Systems and first used in the [Signal] app.
+This protocol is an adaptation of [Matrix.org]'s [Olm] and [Megolm] encryption to the IRC protocol.
+Olm is an implementation of the [double ratchet algorithm] developed by Open Whisper Systems and
+first used in the [Signal] app.
 
 ## Peer sessions
 
@@ -152,6 +152,13 @@ follows:
 The sender will need to use a `label` tag and the `echo-message` capability to find the
 `draft/msgid` of their sent message fragment in order to reference it with the `+kiwi/previous-frag`
 tag.
+
+## Creating a compatible implementation
+
+Our experimental javascript implementation makes use of the C [libolm] library compiled to WASM with
+emscripten. Clients written in other languages should be able to use bindings to [libolm] to
+implement the protocol in without needing to reimplement the cryptographic functions from the [Olm]
+specs. Although the latter always remains a possibility.
 
 ## Points of difficulty / Room for improvement
 
