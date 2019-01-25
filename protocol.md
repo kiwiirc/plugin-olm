@@ -69,48 +69,48 @@ Protocol payloads are serialized to [CBOR] as tagged entities with the following
 
 ### OlmPacket
 
--   CBOR tag: `0x7035`
--   CBOR value: `[senderKey: Buffer, type: int, body: Buffer]`
+- CBOR tag: `0x7035`
+- CBOR value: `[senderKey: ByteString, type: int, body: ByteString]`
 
 The body field can contain an encrypted OlmMessage or MegolmSessionState.
 
 ### OlmMessage
 
--   CBOR tag: `0x7036`
--   CBOR value: `text: string`
+- CBOR tag: `0x7036`
+- CBOR value: `text: string`
 
 A single chat message in a peer session.
 
 ### OlmOneTimeKey
 
--   CBOR tag: `0x7037`
--   CBOR value: `oneTimeKey: Buffer`
+- CBOR tag: `0x7037`
+- CBOR value: `oneTimeKey: ByteString`
 
 Combined with an OlmIdentity, OlmOneTimeKey is used to initialize a new peer session.
 
 ### OlmIdentity
 
--   CBOR tag: `0x7038`
--   CBOR value: `curve25519IdentityKey: Buffer`
+- CBOR tag: `0x7038`
+- CBOR value: `curve25519IdentityKey: ByteString`
 
 ### MegolmMessage
 
--   CBOR tag: `0x7039`
--   CBOR value: `text: string`
+- CBOR tag: `0x7039`
+- CBOR value: `text: string`
 
 A single chat message in a group session.
 
 ### MegolmPacket
 
--   CBOR tag: `0x703a`
--   CBOR value: `[ciphertext: Buffer, senderKey: Buffer, sessionID: Buffer, signature: Buffer]`
+- CBOR tag: `0x703a`
+- CBOR value: `[ciphertext: ByteString, senderKey: ByteString, sessionID: ByteString, signature: ByteString]`
 
 Ciphertext contains an encrypted MegolmMessage.
 
 ### MegolmSessionState
 
--   CBOR tag: `0x703b`
--   CBOR value: `[sessionID: Buffer, sessionKey: Buffer, messageIndex: Buffer]`
+- CBOR tag: `0x703b`
+- CBOR value: `[sessionID: ByteString, sessionKey: ByteString, messageIndex: ByteString]`
 
 Contains the ratchet state necessary to decrypt received MegolmPackets from a user.
 
