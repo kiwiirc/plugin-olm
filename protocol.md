@@ -204,5 +204,6 @@ of the IRC protocol to the extent it was possible.
 [libolm]: https://git.matrix.org/git/olm/about/docs/olm.rst
 [double ratchet algorithm]: https://signal.org/docs/specifications/doubleratchet/
 [Signal]: https://signal.org/
+[KiwiIRC]: https://kiwiirc.com/
 [Message Tag]: https://ircv3.net/specs/core/message-tags-3.2.html
 [CBOR]: http://cbor.io/
