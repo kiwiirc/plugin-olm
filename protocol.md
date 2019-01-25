@@ -6,6 +6,9 @@ This protocol is an adaptation of [Matrix.org]'s [Olm] and [Megolm] encryption t
 Olm is an implementation of the [double ratchet algorithm] developed by Open Whisper Systems and
 first used in the [Signal] app.
 
+The IRC adaptation is being designed under [KiwiIRC] with the goal of creating a modern end-to-end
+encryption standard for IRC that could be implemented by many different clients.
+
 ## Peer sessions
 
 Raw byte arrays are base64 encoded without padding for transmission as [Message Tag] values.
