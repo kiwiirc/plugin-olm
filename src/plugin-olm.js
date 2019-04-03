@@ -177,6 +177,13 @@ kiwi.plugin('olm', async (client /* , log */) => {
 		handleInputAsync(event)
 	})
 
+	// workaround kiwi rendering sent plaintext messages twice due to echo-message
+	client.on('irc.message', (event, network, ircEventObj) => {
+		if (event.type === 'privmsg' && event.nick === network.nick) {
+			ircEventObj.handled = true
+		}
+	})
+
 	async function handleInputAsync(event) {
 		const buffer = client.state.getActiveBuffer()
 		const target = buffer.name
