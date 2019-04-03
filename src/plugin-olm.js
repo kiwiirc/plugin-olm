@@ -39,7 +39,6 @@ kiwi.plugin('olm', async (client /* , log */) => {
 						v-if="syncedCount < totalCount"
 					/>
 				</transition>
-				<span>{{ currentNetworkName }} {{ currentBufferName }}: {{ syncedCount }}/{{ totalCount }}</span>
 			</div>
 		`,
 		data: () => ({
