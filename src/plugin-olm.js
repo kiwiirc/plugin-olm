@@ -60,10 +60,13 @@ kiwi.plugin('olm', async (client /* , log */) => {
 				return activeNetwork.name
 			},
 			currentBufferName() {
-				const activeBuffer = kiwi.state.getActiveBuffer()
 				// const activeBuffer = kiwi.state.networks
 				// 	.find(network => network.id === kiwi.state.ui.active_network)
 				// 	.buffers.find(buffer => buffer.name === kiwi.state.ui.active_buffer)
+				const activeBuffer = kiwi.state.getActiveBuffer()
+				if (!activeBuffer) {
+					return undefined
+				}
 				return activeBuffer.name
 			},
 			currentNetwork() {
