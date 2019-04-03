@@ -76,24 +76,18 @@ kiwi.plugin('olm', async (client /* , log */) => {
 			toggleEncryption,
 			encryptionEnabled,
 			ensureNetworkRecordExists(networkName) {
-				if (!Object.getOwnPropertyNames(this.networks).includes(networkName)) {
-					this.networks[networkName] = {
-						buffers: {},
-					}
+				if (!Object.keys(this.networks).includes(networkName)) {
+					this.$set(this.networks, networkName, { buffers: {} })
 				}
 			},
 			ensureBufferRecordExists(networkName, bufferName) {
 				this.ensureNetworkRecordExists(networkName)
 
-				if (
-					!Object.getOwnPropertyNames(this.networks[networkName].buffers).includes(
-						bufferName,
-					)
-				) {
-					this.networks[networkName].buffers[bufferName] = {
+				if (!Object.keys(this.networks[networkName].buffers).includes(bufferName)) {
+					this.$set(this.networks[networkName].buffers, bufferName, {
 						syncedCount: 0,
 						totalCount: 0,
-					}
+					})
 				}
 			},
 		},
