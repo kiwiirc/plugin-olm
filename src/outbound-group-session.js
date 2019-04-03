@@ -2,13 +2,11 @@ import cbor from 'cbor'
 import { Message as IrcMessage } from 'irc-framework'
 import Olm from 'olm'
 import { COMMANDS, TAGS } from './constants'
-// import { getOtherUsers } from './utils'
 import MegolmMessage from './serialization/types/megolm-message'
 import MegolmPacket from './serialization/types/megolm-packet'
 import { serializeToMessageTagValue } from './serialization/message-tags'
 import MegolmSessionState from './serialization/types/megolm-session-state'
 import autobind from 'autobind-decorator'
-import { toUnpaddedBase64 } from './utils/toUnpaddedBase64'
 import sendMaybeFragmented from './fragmentation/send-maybe-fragmented'
 
 export default class OutboundGroupSession {
@@ -39,8 +37,6 @@ export default class OutboundGroupSession {
 
 	@autobind
 	onUserlist(event) {
-		const { channel } = event
-
 		let syncStatusChanged = false
 
 		// add all unsynced users to queue
@@ -71,6 +67,7 @@ export default class OutboundGroupSession {
 
 		const payload = {
 			channel: this.channelName,
+			network: this.client.network.name,
 			syncedCount,
 			totalCount,
 		}

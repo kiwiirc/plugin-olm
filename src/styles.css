@@ -35,3 +35,28 @@
 
 	color: #7b0000;
 }
+
+/* KEY EXCHANGE SPINNER */
+.fade-enter-active,
+.fade-leave-active {
+	transition: opacity 0.5s;
+}
+
+.fade-enter,
+.fade-leave-to {
+	opacity: 0;
+}
+
+.fade-enter-to,
+.fade-leave {
+	opacity: 1;
+}
+
+.plugin-olm-inputbar-ui {
+	position: relative;
+}
+
+.olm-syncing-icon {
+	position: absolute;
+	top: -0.4em;
+}

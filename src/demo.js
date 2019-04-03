@@ -7,7 +7,7 @@ import { hsluvToHex } from 'hsluv'
 import { Client as IrcClient } from 'irc-framework'
 import { times } from 'lodash'
 import olmMiddleware from './middleware'
-import { getOtherUsers } from './utils'
+import { getOtherUsers } from './utils/getOtherUsers'
 
 chalk.enabled = true
 
