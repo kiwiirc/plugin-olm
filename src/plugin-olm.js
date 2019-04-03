@@ -15,7 +15,9 @@ kiwi.on('network.new', newNetworkEvent => {
 })
 
 kiwi.plugin('olm', async (client /* , log */) => {
-	await Olm.init()
+	if (typeof Olm.init === 'function') {
+		await Olm.init()
+	}
 
 	const { Vue } = kiwi
 
