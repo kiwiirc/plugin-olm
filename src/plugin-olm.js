@@ -46,29 +46,8 @@ kiwi.plugin('olm', async (client /* , log */) => {
 			networks: {},
 		}),
 		computed: {
-			currentNetworkName() {
-				// this.ui.active_network = networkid;
-				// this.ui.active_buffer = bufferName;
-
-				// return kiwi.state.networks.find(
-				// 	network => network.id === kiwi.state.ui.active_network,
-				// ).name
-				const activeNetwork = kiwi.state.getActiveNetwork()
-				if (!activeNetwork) {
-					return undefined
-				}
-				return activeNetwork.name
-			},
-			currentBufferName() {
-				// const activeBuffer = kiwi.state.networks
-				// 	.find(network => network.id === kiwi.state.ui.active_network)
-				// 	.buffers.find(buffer => buffer.name === kiwi.state.ui.active_buffer)
-				const activeBuffer = kiwi.state.getActiveBuffer()
-				if (!activeBuffer) {
-					return undefined
-				}
-				return activeBuffer.name
-			},
+			currentNetworkName,
+			currentBufferName,
 			currentNetwork() {
 				if (!this.currentNetworkName) {
 					return undefined
@@ -83,38 +62,11 @@ kiwi.plugin('olm', async (client /* , log */) => {
 				this.ensureBufferRecordExists(this.currentNetworkName, this.currentBufferName)
 				return this.currentNetwork.buffers[this.currentBufferName]
 			},
-			currentNetworkSettingsPrefix() {
-				return `plugin-olm.networks.${this.currentNetworkName}`
-			},
+			currentNetworkSettingsPrefix,
 		},
 		methods: {
-			encryptionEnabledBuffers() {
-				return (
-					kiwi.state.setting(`${this.currentNetworkSettingsPrefix}.enabled_buffers`) || []
-				)
-			},
-			encryptionEnabled() {
-				return this.encryptionEnabledBuffers().includes(this.currentBufferName)
-			},
-			toggleEncryption() {
-				if (this.encryptionEnabled()) {
-					this.disableEncryption()
-				} else {
-					this.enableEncryption()
-				}
-			},
-			enableEncryption() {
-				kiwi.state.setting(`${this.currentNetworkSettingsPrefix}.enabled_buffers`, [
-					...this.encryptionEnabledBuffers(),
-					this.currentBufferName,
-				])
-			},
-			disableEncryption() {
-				kiwi.state.setting(
-					`${this.currentNetworkSettingsPrefix}.enabled_buffers`,
-					this.encryptionEnabledBuffers().filter(x => x !== this.currentBufferName),
-				)
-			},
+			toggleEncryption,
+			encryptionEnabled,
 			ensureNetworkRecordExists(networkName) {
 				if (!Object.getOwnPropertyNames(this.networks).includes(networkName)) {
 					this.networks[networkName] = {
@@ -166,7 +118,7 @@ kiwi.plugin('olm', async (client /* , log */) => {
 		const { ircClient } = network
 		ircClient.use(olmMiddleware())
 
-		ircClient.on('olm.message', ({ sender, target, text }) => {
+		ircClient.on('olm.message', ({ sender, /* target, */ text }) => {
 			const buffer = kiwi.state.getOrAddBufferByName(network.id, sender)
 
 			buffer.state.addMessage(buffer, {
@@ -248,3 +200,53 @@ kiwi.plugin('olm', async (client /* , log */) => {
 		})
 	}
 })
+
+function currentNetworkName() {
+	const activeNetwork = kiwi.state.getActiveNetwork()
+	if (!activeNetwork) {
+		return undefined
+	}
+	return activeNetwork.name
+}
+
+function currentBufferName() {
+	const activeBuffer = kiwi.state.getActiveBuffer()
+	if (!activeBuffer) {
+		return undefined
+	}
+	return activeBuffer.name
+}
+
+function currentNetworkSettingsPrefix() {
+	return `plugin-olm.networks.${currentNetworkName()}`
+}
+
+function encryptionEnabledBuffers() {
+	return kiwi.state.setting(`${currentNetworkSettingsPrefix()}.enabled_buffers`) || []
+}
+
+function encryptionEnabled() {
+	return encryptionEnabledBuffers().includes(currentBufferName())
+}
+
+function toggleEncryption() {
+	if (encryptionEnabled()) {
+		disableEncryption()
+	} else {
+		enableEncryption()
+	}
+}
+
+function enableEncryption() {
+	kiwi.state.setting(`${currentNetworkSettingsPrefix()}.enabled_buffers`, [
+		...encryptionEnabledBuffers(),
+		currentBufferName(),
+	])
+}
+
+function disableEncryption() {
+	kiwi.state.setting(
+		`${currentNetworkSettingsPrefix()}.enabled_buffers`,
+		encryptionEnabledBuffers().filter(x => x !== currentBufferName()),
+	)
+}
