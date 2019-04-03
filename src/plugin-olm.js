@@ -39,7 +39,7 @@ kiwi.plugin('olm', async (client /* , log */) => {
 						v-if="syncedCount < totalCount"
 					/>
 				</transition>
-				<span>{{ currentNetworkName }} {{ currentChannelName }}: {{ syncedCount() }}/{{ totalCount() }}</span>
+				<span>{{ currentNetworkName }} {{ currentBufferName }}: {{ syncedCount() }}/{{ totalCount() }}</span>
 			</div>
 		`,
 		data: () => ({
@@ -53,35 +53,32 @@ kiwi.plugin('olm', async (client /* , log */) => {
 				// return kiwi.state.networks.find(
 				// 	network => network.id === kiwi.state.ui.active_network,
 				// ).name
-
-				return kiwi.state.getActiveNetwork().name
+				const activeNetwork = kiwi.state.getActiveNetwork()
+				if (!activeNetwork) {
+					return undefined
+				}
+				return activeNetwork.name
 			},
-			currentChannelName() {
+			currentBufferName() {
 				const activeBuffer = kiwi.state.getActiveBuffer()
 				// const activeBuffer = kiwi.state.networks
 				// 	.find(network => network.id === kiwi.state.ui.active_network)
 				// 	.buffers.find(buffer => buffer.name === kiwi.state.ui.active_buffer)
-				if (activeBuffer.isChannel()) {
-					return activeBuffer.name
-				}
-				return undefined
+				return activeBuffer.name
 			},
 			currentNetwork() {
-				if (this.currentNetworkName === undefined) {
-					return
+				if (!this.currentNetworkName) {
+					return undefined
 				}
 				this.ensureNetworkRecordExists(this.currentNetworkName)
 				return this.networks[this.currentNetworkName]
 			},
-			currentChannel() {
-				if (this.currentChannelName === undefined) {
-					return
+			currentBuffer() {
+				if (!this.currentBufferName) {
+					return undefined
 				}
-				this.ensureChannelRecordExists(
-					this.currentNetworkName,
-					this.currentChannelChannelName,
-				)
-				return this.currentNetwork.channels[this.currentChannelName]
+				this.ensureBufferRecordExists(this.currentNetworkName, this.currentBufferName)
+				return this.currentNetwork.buffers[this.currentBufferName]
 			},
 		},
 		methods: {
@@ -90,31 +87,31 @@ kiwi.plugin('olm', async (client /* , log */) => {
 			ensureNetworkRecordExists(networkName) {
 				if (!Object.getOwnPropertyNames(this.networks).includes(networkName)) {
 					this.networks[networkName] = {
-						channels: {},
+						buffers: {},
 					}
 				}
 			},
-			ensureChannelRecordExists(networkName, channelName) {
+			ensureBufferRecordExists(networkName, bufferName) {
 				this.ensureNetworkRecordExists(networkName)
 
 				if (
-					!Object.getOwnPropertyNames(this.networks[networkName].channels).includes(
-						channelName,
+					!Object.getOwnPropertyNames(this.networks[networkName].buffers).includes(
+						bufferName,
 					)
 				) {
-					this.networks[networkName].channels[channelName] = {
+					this.networks[networkName].buffers[bufferName] = {
 						syncedCount: 0,
 						totalCount: 0,
 					}
 				}
 			},
 			syncedCount() {
-				if (!this.currentChannel) return 0
-				return this.currentChannel.syncedCount
+				if (!this.currentBuffer) return 0
+				return this.currentBuffer.syncedCount
 			},
 			totalCount() {
-				if (!this.currentChannel) return 0
-				return this.currentChannel.totalCount
+				if (!this.currentBuffer) return 0
+				return this.currentBuffer.totalCount
 			},
 		},
 	})
@@ -178,15 +175,18 @@ kiwi.plugin('olm', async (client /* , log */) => {
 			ircClient.olm.getGroupSession(event.channel)
 		})
 
-		ircClient.on('megolm.sync.status', ({ network, channel, syncedCount, totalCount }) => {
-			inputBarUI.ensureChannelRecordExists(network, channel)
-			const channelRecord = inputBarUI.networks[network].channels[channel]
-			Object.assign(channelRecord, {
-				syncedCount,
-				totalCount,
-			})
-			inputBarUI.$forceUpdate()
-		})
+		ircClient.on(
+			'megolm.sync.status',
+			({ networkName, channelName, syncedCount, totalCount }) => {
+				inputBarUI.ensureBufferRecordExists(networkName, channelName)
+				const bufferRecord = inputBarUI.networks[networkName].buffers[channelName]
+				Object.assign(bufferRecord, {
+					syncedCount,
+					totalCount,
+				})
+				inputBarUI.$forceUpdate()
+			},
+		)
 	}
 
 	client.on('pre.input.command.msg', event => {
@@ -206,7 +206,7 @@ kiwi.plugin('olm', async (client /* , log */) => {
 		const target = buffer.name
 		const net = client.state.getActiveNetwork()
 
-		await net.ircClient.olm.sendMessage(target)
+		await net.ircClient.olm.sendMessage(target, event.raw)
 
 		buffer.state.addMessage(buffer, {
 			time: Date.now(),

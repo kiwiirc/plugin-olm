@@ -66,8 +66,8 @@ export default class OutboundGroupSession {
 		const totalCount = syncedCount + this.unsyncedPeers.size
 
 		const payload = {
-			channel: this.channelName,
-			network: this.client.network.name,
+			channelName: this.channelName,
+			networkName: this.client.network.name,
 			syncedCount,
 			totalCount,
 		}
