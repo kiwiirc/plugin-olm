@@ -27,7 +27,7 @@
 		"get-range": "^1.0.0",
 		"haikunator": "^2.0.0",
 		"hsluv": "^0.0.3",
-		"irc-framework": "^4.0.0",
+		"irc-framework": "vith/irc-framework#export-channel",
 		"lodash": "^4.17.11",
 		"olm": "https://matrix.org/packages/npm/olm/olm-3.0.0.tgz",
 		"voca": "^1.4.0",
