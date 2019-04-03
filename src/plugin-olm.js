@@ -80,10 +80,38 @@ kiwi.plugin('olm', async (client /* , log */) => {
 				this.ensureBufferRecordExists(this.currentNetworkName, this.currentBufferName)
 				return this.currentNetwork.buffers[this.currentBufferName]
 			},
+			currentNetworkSettingsPrefix() {
+				return `plugin-olm.networks.${this.currentNetworkName}`
+			},
 		},
 		methods: {
-			encryptionEnabled,
-			toggleEncryption,
+			encryptionEnabledBuffers() {
+				return (
+					kiwi.state.setting(`${this.currentNetworkSettingsPrefix}.enabled_buffers`) || []
+				)
+			},
+			encryptionEnabled() {
+				return this.encryptionEnabledBuffers().includes(this.currentBufferName)
+			},
+			toggleEncryption() {
+				if (this.encryptionEnabled()) {
+					this.disableEncryption()
+				} else {
+					this.enableEncryption()
+				}
+			},
+			enableEncryption() {
+				kiwi.state.setting(`${this.currentNetworkSettingsPrefix}.enabled_buffers`, [
+					...this.encryptionEnabledBuffers(),
+					this.currentBufferName,
+				])
+			},
+			disableEncryption() {
+				kiwi.state.setting(
+					`${this.currentNetworkSettingsPrefix}.enabled_buffers`,
+					this.encryptionEnabledBuffers().filter(x => x !== this.currentBufferName),
+				)
+			},
 			ensureNetworkRecordExists(networkName) {
 				if (!Object.getOwnPropertyNames(this.networks).includes(networkName)) {
 					this.networks[networkName] = {
@@ -217,45 +245,3 @@ kiwi.plugin('olm', async (client /* , log */) => {
 		})
 	}
 })
-
-function currentNetworkName() {
-	return kiwi.state.getActiveNetwork().name
-}
-
-function currentBufferName() {
-	return kiwi.state.getActiveBuffer().name
-}
-
-function currentNetworkSettingsPrefix() {
-	return `plugin-olm.networks.${currentNetworkName()}`
-}
-
-function encryptionEnabledBuffers() {
-	return kiwi.state.setting(`${currentNetworkSettingsPrefix()}.enabled_buffers`) || []
-}
-
-function encryptionEnabled() {
-	return encryptionEnabledBuffers().includes(currentBufferName())
-}
-
-function toggleEncryption() {
-	if (encryptionEnabled()) {
-		disableEncryption()
-	} else {
-		enableEncryption()
-	}
-}
-
-function enableEncryption() {
-	kiwi.state.setting(`${currentNetworkSettingsPrefix()}.enabled_buffers`, [
-		...encryptionEnabledBuffers(),
-		currentBufferName(),
-	])
-}
-
-function disableEncryption() {
-	kiwi.state.setting(
-		`${currentNetworkSettingsPrefix()}.enabled_buffers`,
-		encryptionEnabledBuffers().filter(x => x !== currentBufferName()),
-	)
-}
