@@ -39,7 +39,7 @@ kiwi.plugin('olm', async (client /* , log */) => {
 						v-if="syncedCount < totalCount"
 					/>
 				</transition>
-				<span>{{ currentNetworkName }} {{ currentBufferName }}: {{ syncedCount() }}/{{ totalCount() }}</span>
+				<span>{{ currentNetworkName }} {{ currentBufferName }}: {{ syncedCount }}/{{ totalCount }}</span>
 			</div>
 		`,
 		data: () => ({
@@ -48,6 +48,7 @@ kiwi.plugin('olm', async (client /* , log */) => {
 		computed: {
 			currentNetworkName,
 			currentBufferName,
+			currentNetworkSettingsPrefix,
 			currentNetwork() {
 				if (!this.currentNetworkName) {
 					return undefined
@@ -62,7 +63,14 @@ kiwi.plugin('olm', async (client /* , log */) => {
 				this.ensureBufferRecordExists(this.currentNetworkName, this.currentBufferName)
 				return this.currentNetwork.buffers[this.currentBufferName]
 			},
-			currentNetworkSettingsPrefix,
+			syncedCount() {
+				if (!this.currentBuffer) return 0
+				return this.currentBuffer.syncedCount
+			},
+			totalCount() {
+				if (!this.currentBuffer) return 0
+				return this.currentBuffer.totalCount
+			},
 		},
 		methods: {
 			toggleEncryption,
@@ -87,14 +95,6 @@ kiwi.plugin('olm', async (client /* , log */) => {
 						totalCount: 0,
 					}
 				}
-			},
-			syncedCount() {
-				if (!this.currentBuffer) return 0
-				return this.currentBuffer.syncedCount
-			},
-			totalCount() {
-				if (!this.currentBuffer) return 0
-				return this.currentBuffer.totalCount
 			},
 		},
 	})
@@ -167,7 +167,6 @@ kiwi.plugin('olm', async (client /* , log */) => {
 					syncedCount,
 					totalCount,
 				})
-				inputBarUI.$forceUpdate()
 			},
 		)
 	}
