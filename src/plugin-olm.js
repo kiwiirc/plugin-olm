@@ -178,7 +178,7 @@ kiwi.plugin('olm', async (client /* , log */) => {
 
 	// workaround kiwi rendering sent plaintext messages twice due to echo-message
 	client.on('irc.message', (event, network, ircEventObj) => {
-		if (event.type === 'privmsg' && event.nick === network.nick) {
+		if (event.nick === network.nick) {
 			ircEventObj.handled = true
 		}
 	})
