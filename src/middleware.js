@@ -3,11 +3,16 @@ import MegolmBroker from './megolm-broker'
 import OlmBroker from './olm-broker'
 import createDefragmentedMessageSource from './fragmentation/reassembled-messages'
 
-export default function olmMiddleware() {
+export default function olmMiddleware({ shouldInitiateKeyExchange }) {
 	return function middleware(client /* rawEvents, parsedEvents */) {
 		const defragmentedMessages = createDefragmentedMessageSource(client)
 		const olmBroker = new OlmBroker({ client, defragmentedMessages })
-		const megolmBroker = new MegolmBroker({ client, olmBroker, defragmentedMessages }) // eslint-disable-line no-unused-vars
+		const megolmBroker = new MegolmBroker({
+			client,
+			olmBroker,
+			defragmentedMessages,
+			shouldInitiateKeyExchange,
+		}) // eslint-disable-line no-unused-vars
 
 		client.olm = {
 			...(client.olm || {}),

@@ -68,7 +68,7 @@ kiwi.plugin('olm', async (client /* , log */) => {
 			currentNetworkName,
 			currentKiwiBuffer,
 			currentBufferName,
-			currentNetworkSettingsPrefix,
+			networkSettingsPrefix,
 			currentNetwork() {
 				if (!this.currentNetworkName) {
 					return undefined
@@ -140,7 +140,7 @@ kiwi.plugin('olm', async (client /* , log */) => {
 
 	function handleNewNetwork(network) {
 		const { ircClient } = network
-		ircClient.use(olmMiddleware())
+		ircClient.use(olmMiddleware({ shouldInitiateKeyExchange }))
 
 		ircClient.on('olm.message', ({ sender, /* target, */ text }) => {
 			const buffer = kiwi.state.getOrAddBufferByName(network.id, sender)
@@ -250,36 +250,63 @@ function currentBufferName() {
 	return activeBuffer && activeBuffer.name
 }
 
-function currentNetworkSettingsPrefix() {
-	return `plugin-olm.networks.${currentNetworkName()}`
+function networkSettingsPrefix(networkName = currentNetworkName()) {
+	return `plugin-olm.networks.${networkName}`
 }
 
-function encryptionEnabledBuffers() {
-	return kiwi.state.setting(`${currentNetworkSettingsPrefix()}.enabled_buffers`) || []
+function encryptionEnabledBuffers(networkName = currentNetworkName()) {
+	const prefix = networkSettingsPrefix(networkName)
+	return kiwi.state.setting(`${prefix}.enabled_buffers`) || []
 }
 
-function encryptionEnabled() {
-	return encryptionEnabledBuffers().includes(currentBufferName())
+function encryptionEnabled(networkName = currentNetworkName(), bufferName = currentBufferName()) {
+	const enabledBuffers = encryptionEnabledBuffers(networkName)
+	const enabled = enabledBuffers.includes(bufferName)
+	return enabled
 }
 
-function toggleEncryption() {
-	if (encryptionEnabled()) {
-		disableEncryption()
+function toggleEncryption(networkName = currentNetworkName(), bufferName = currentBufferName()) {
+	if (encryptionEnabled(networkName, bufferName)) {
+		disableEncryption(networkName, bufferName)
 	} else {
-		enableEncryption()
+		enableEncryption(networkName, bufferName)
 	}
 }
 
-function enableEncryption() {
-	kiwi.state.setting(`${currentNetworkSettingsPrefix()}.enabled_buffers`, [
-		...encryptionEnabledBuffers(),
-		currentBufferName(),
-	])
+function setEncryption(
+	enabled,
+	networkName = currentNetworkName(),
+	bufferName = currentBufferName(),
+) {
+	const prefix = networkSettingsPrefix(networkName)
+	let enabledBuffers
+	if (enabled) {
+		// add to set
+		enabledBuffers = [...encryptionEnabledBuffers(networkName), bufferName]
+	} else {
+		// remove from set
+		enabledBuffers = encryptionEnabledBuffers(networkName).filter(x => x !== bufferName)
+	}
+	kiwi.state.setting(`${prefix}.enabled_buffers`, enabledBuffers)
 }
 
-function disableEncryption() {
-	kiwi.state.setting(
-		`${currentNetworkSettingsPrefix()}.enabled_buffers`,
-		encryptionEnabledBuffers().filter(x => x !== currentBufferName()),
-	)
+async function enableEncryption(
+	networkName = currentNetworkName(),
+	bufferName = currentBufferName(),
+) {
+	setEncryption(true, networkName, bufferName)
+	const net = currentNetworkState()
+	const groupSession = await net.ircClient.olm.getGroupSession(bufferName)
+	groupSession.shareState()
+}
+
+function disableEncryption(networkName = currentNetworkName(), bufferName = currentBufferName()) {
+	setEncryption(false, networkName, bufferName)
+}
+
+function shouldInitiateKeyExchange(outboundGroupSession) {
+	const { channelName, client } = outboundGroupSession
+	const networkName = client.network.name
+	const should = encryptionEnabled(networkName, channelName)
+	return should
 }

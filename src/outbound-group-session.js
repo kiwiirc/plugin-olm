@@ -12,15 +12,21 @@ import sendMaybeFragmented from './fragmentation/send-maybe-fragmented'
 export default class OutboundGroupSession {
 	client
 	channelName
-	// olmBroker
+	olmBroker
 	syncedPeers = new Set()
 	unsyncedPeers = new Set()
 
-	constructor(client, channelName, olmBroker) {
+	constructor(opts /*: { client, channelName, olmBroker, shouldInitiateKeyExchange } */) {
+		const defaultOpts = {
+			shouldInitiateKeyExchange: (/* outboundGroupSession */) => true,
+		}
+		const effectiveOpts = {
+			...defaultOpts,
+			...opts,
+		}
+
 		// store args
-		this.client = client
-		this.channelName = channelName
-		this.olmBroker = olmBroker
+		Object.assign(this, effectiveOpts)
 
 		// initialize session
 		const session = new Olm.OutboundGroupSession()
@@ -37,6 +43,8 @@ export default class OutboundGroupSession {
 
 	@autobind
 	onUserlist(event) {
+		if (!this.shouldInitiateKeyExchange(this)) return
+
 		let syncStatusChanged = false
 
 		// add all unsynced users to queue
@@ -78,6 +86,8 @@ export default class OutboundGroupSession {
 	onJoin(event) {
 		// ignore own joins
 		if (this.client.user.nick === event.nick) return
+
+		if (!this.shouldInitiateKeyExchange(this)) return
 
 		// ignore already synced peers
 		if (this.syncedPeers.has(event.nick)) return
