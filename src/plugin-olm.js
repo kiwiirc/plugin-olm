@@ -10,8 +10,8 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 kiwi.on('network.new', newNetworkEvent => {
 	const client = newNetworkEvent.network.ircClient
 	client.requestCap(CAPABILITIES.MESSAGE_TAGS)
-	client.requestCap('echo-message')
-	client.requestCap('draft/labeled-response')
+	client.requestCap(CAPABILITIES.ECHO_MESSAGE)
+	client.requestCap(CAPABILITIES.LABELED_RESPONSE)
 })
 
 kiwi.plugin('olm', async (client /* , log */) => {
@@ -26,26 +26,47 @@ kiwi.plugin('olm', async (client /* , log */) => {
 
 	const InputBarUI = Vue.extend({
 		template: `
-			<div class="plugin-olm-inputbar-ui">
-				<font-awesome-icon
-					:icon="encryptionEnabled() ? 'lock' : 'lock-open'"
-					v-on:click="toggleEncryption()"
-				/>
+			<div class="plugin-olm-inputbar-ui" @mouseover="hover = true" @mouseleave="hover = false">
+				<!-- <v-popover :show="true" :boundariesElement="boundariesElement" placement="bottom-end"> -->
+					<font-awesome-icon
+						:icon="encryptionEnabled() ? 'lock' : 'lock-open'"
+						v-on:click="toggleEncryption()"
+					/>
+					<div v-if="hover" class="e2ee-sync-status-popover">
+						<div>{{ megolmSession.channel }}</div>
+						<details>
+							<summary>Synced peers ({{ syncedPeers.length }})</summary>
+							<ul>
+								<li v-for="syncedPeer of syncedPeers">{{ syncedPeer }}</li>
+							</ul>
+						</details>
+
+						<details open>
+							<summary>Unsynced peers ({{ unsyncedPeers.length }})</summary>
+							<ul>
+								<li v-for="unsyncedPeer of unsyncedPeers">{{ unsyncedPeer }}</li>
+							</ul>
+						</details>
+					</div>
+				<!-- </v-popover> -->
 				<transition name="fade" mode="in-out">
 					<font-awesome-icon
 						class="olm-syncing-icon"
 						spin
 						icon="sync"
-						v-if="syncedCount < totalCount"
+						v-if="unsyncedPeers.length > 0"
 					/>
 				</transition>
 			</div>
 		`,
 		data: () => ({
 			networks: {},
+			hover: false,
 		}),
 		computed: {
+			currentNetworkState,
 			currentNetworkName,
+			currentKiwiBuffer,
 			currentBufferName,
 			currentNetworkSettingsPrefix,
 			currentNetwork() {
@@ -62,13 +83,23 @@ kiwi.plugin('olm', async (client /* , log */) => {
 				this.ensureBufferRecordExists(this.currentNetworkName, this.currentBufferName)
 				return this.currentNetwork.buffers[this.currentBufferName]
 			},
-			syncedCount() {
-				if (!this.currentBuffer) return 0
-				return this.currentBuffer.syncedCount
+			syncedPeers() {
+				if (!this.currentBuffer) return []
+				return this.currentBuffer.syncedPeers
 			},
-			totalCount() {
-				if (!this.currentBuffer) return 0
-				return this.currentBuffer.totalCount
+			unsyncedPeers() {
+				if (!this.currentBuffer) return []
+				return this.currentBuffer.unsyncedPeers
+			},
+			async megolmSession() {
+				const networkState = this.currentNetworkState
+				if (!networkState || !this.currentKiwiBuffer.isChannel()) {
+					return undefined
+				}
+				if (!networkState.ircClient.olm) return
+				const { megolmBroker } = networkState.ircClient.olm
+				if (!megolmBroker) return
+				return await megolmBroker.getGroupSession(this.currentBufferName)
 			},
 		},
 		methods: {
@@ -84,8 +115,8 @@ kiwi.plugin('olm', async (client /* , log */) => {
 
 				if (!Object.keys(this.networks[networkName].buffers).includes(bufferName)) {
 					this.$set(this.networks[networkName].buffers, bufferName, {
-						syncedCount: 0,
-						totalCount: 0,
+						syncedPeers: [],
+						unsyncedPeers: [],
 					})
 				}
 			},
@@ -153,13 +184,14 @@ kiwi.plugin('olm', async (client /* , log */) => {
 
 		ircClient.on(
 			'megolm.sync.status',
-			({ networkName, channelName, syncedCount, totalCount }) => {
+			({ networkName, channelName, syncedPeers, unsyncedPeers }) => {
 				inputBarUI.ensureBufferRecordExists(networkName, channelName)
-				const bufferRecord = inputBarUI.networks[networkName].buffers[channelName]
-				Object.assign(bufferRecord, {
-					syncedCount,
-					totalCount,
-				})
+				const bufferRecords = inputBarUI.networks[networkName].buffers
+				bufferRecords[channelName] = {
+					...bufferRecords[channelName],
+					syncedPeers: [...syncedPeers],
+					unsyncedPeers: [...unsyncedPeers],
+				}
 			},
 		)
 	}
@@ -200,20 +232,22 @@ kiwi.plugin('olm', async (client /* , log */) => {
 	}
 })
 
+function currentNetworkState() {
+	return kiwi.state.getActiveNetwork()
+}
+
 function currentNetworkName() {
-	const activeNetwork = kiwi.state.getActiveNetwork()
-	if (!activeNetwork) {
-		return undefined
-	}
-	return activeNetwork.name
+	const activeNetwork = currentNetworkState()
+	return activeNetwork && activeNetwork.name
+}
+
+function currentKiwiBuffer() {
+	return kiwi.state.getActiveBuffer()
 }
 
 function currentBufferName() {
-	const activeBuffer = kiwi.state.getActiveBuffer()
-	if (!activeBuffer) {
-		return undefined
-	}
-	return activeBuffer.name
+	const activeBuffer = currentKiwiBuffer()
+	return activeBuffer && activeBuffer.name
 }
 
 function currentNetworkSettingsPrefix() {

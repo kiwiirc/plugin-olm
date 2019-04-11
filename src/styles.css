@@ -60,3 +60,11 @@
 	position: absolute;
 	top: -0.4em;
 }
+
+.e2ee-sync-status-popover {
+	position: absolute;
+	bottom: 38px;
+	right: -12px;
+	background-color: #ceb3b3;
+	min-width: 15em;
+}

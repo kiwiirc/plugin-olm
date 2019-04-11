@@ -62,14 +62,13 @@ export default class OutboundGroupSession {
 
 	@autobind
 	emitSyncStatus() {
-		const syncedCount = this.syncedPeers.size
-		const totalCount = syncedCount + this.unsyncedPeers.size
+		const { syncedPeers, unsyncedPeers } = this
 
 		const payload = {
 			channelName: this.channelName,
 			networkName: this.client.network.name,
-			syncedCount,
-			totalCount,
+			syncedPeers,
+			unsyncedPeers,
 		}
 
 		this.client.emit('megolm.sync.status', payload)
