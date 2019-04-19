@@ -231,7 +231,7 @@ kiwi.plugin('olm', async (client /* , log */) => {
 		)
 	}
 
-	client.on('pre.input.command.msg', event => {
+	client.on('input.command.msg', event => {
 		// don't intercept /msg when typed literally
 		if (event.raw.startsWith('/')) return
 
