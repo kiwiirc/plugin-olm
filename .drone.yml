@@ -17,16 +17,14 @@ steps:
   image: node
   commands:
   - yarn pack
-  - mv plugin-olm-${DRONE_TAG}.tgz plugin-olm-${DRONE_TAG}.tar.gz
   when:
     event: tag
 
-- name: gitea_release
-  image: plugins/gitea-release
+- name: publish
+  image: plugins/github-release
   settings:
     api_key:
-      from_secret: plugin-olm-nonmirror-release
-    base_url: http://ts440.lan:3000
-    files: plugin-olm-${DRONE_TAG}.tar.gz
+      from_secret: plugin-olm-github-api-token
+    files: plugin-olm-${DRONE_TAG}.tgz
   when:
     event: tag
