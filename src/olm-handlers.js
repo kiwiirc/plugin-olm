@@ -54,6 +54,8 @@ export function handleOlmIdentityRequest(olmBroker) {
 
 		const { client } = olmBroker
 
+		if (sender === client.user.nick) return // ignore self
+
 		const identity = new OlmIdentity(olmBroker.getOwnCurve25519IdentityKey())
 
 		const response = new IrcMessage(COMMANDS.TAGMSG, sender)
