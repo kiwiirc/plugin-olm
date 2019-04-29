@@ -1,8 +1,9 @@
+// eslint-disable-next-line import/no-commonjs, import/no-nodejs-modules
 const path = require('path')
 
+// eslint-disable-next-line import/no-commonjs
 module.exports = {
 	mode: 'production',
-	entry: './src/plugin-olm.js',
 	output: {
 		filename: 'plugin-olm.js',
 	},

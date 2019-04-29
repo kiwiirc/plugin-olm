@@ -1,7 +1,8 @@
 {
-	"name": "e2e-poc",
+	"name": "plugin-olm",
 	"version": "0.1.0",
-	"main": "src/index.js",
+	"main": "dist/plugin-olm.js",
+	"module": "src/",
 	"author": "Jason Papakostas <vithos@gmail.com>",
 	"license": "UNLICENSED",
 	"private": true,
