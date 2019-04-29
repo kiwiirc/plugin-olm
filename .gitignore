@@ -2,3 +2,5 @@
 /lib/
 /dist/
 /yarn-error.log
+/plugin-olm-v*.tgz
+/plugin-olm-v*.tar.gz

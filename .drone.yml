@@ -1,0 +1,32 @@
+---
+kind: pipeline
+name: default
+
+steps:
+- name: install deps
+  image: node
+  commands:
+  - yarn --frozen-lockfile
+
+- name: build
+  image: node
+  commands:
+  - yarn run build-plugin
+
+- name: pack
+  image: node
+  commands:
+  - yarn pack
+  - mv plugin-olm-${DRONE_TAG}.tgz plugin-olm-${DRONE_TAG}.tar.gz
+  when:
+    event: tag
+
+- name: gitea_release
+  image: plugins/gitea-release
+  settings:
+    api_key:
+      from_secret: plugin-olm-nonmirror-release
+    base_url: http://ts440.lan:3000
+    files: plugin-olm-${DRONE_TAG}.tar.gz
+  when:
+    event: tag
