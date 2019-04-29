@@ -1,7 +1,7 @@
 const path = require('path')
 
 module.exports = {
-	mode: 'development',
+	mode: 'production',
 	entry: './src/plugin-olm.js',
 	output: {
 		filename: 'plugin-olm.js',
