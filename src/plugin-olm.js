@@ -8,10 +8,45 @@ import { faLock, faLockOpen, faCircleNotch, faSync } from '@fortawesome/free-sol
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 kiwi.on('network.new', newNetworkEvent => {
-	const client = newNetworkEvent.network.ircClient
-	client.requestCap(CAPABILITIES.MESSAGE_TAGS)
-	client.requestCap(CAPABILITIES.ECHO_MESSAGE)
-	client.requestCap(CAPABILITIES.LABELED_RESPONSE)
+	const { ircClient: client } = newNetworkEvent.network
+	const wantedCaps = [
+		[CAPABILITIES.MESSAGE_TAGS, CAPABILITIES.DRAFT_MESSAGE_TAGS_0_2],
+		CAPABILITIES.ECHO_MESSAGE,
+		[CAPABILITIES.LABELED_RESPONSE, CAPABILITIES.DRAFT_LABELED_RESPONSE],
+	]
+	for (const wantedCap of wantedCaps) {
+		if (wantedCap instanceof Array) {
+			for (const versionedCap of wantedCap) {
+				client.requestCap(versionedCap)
+			}
+		} else {
+			client.requestCap(wantedCap)
+		}
+	}
+	
+	client.on('registered', event => {
+		const missingCaps = []
+		const { /* requested, */ enabled } = client.network.cap
+		for (const wantedCap of wantedCaps) {
+			if (wantedCap instanceof Array) {
+				if (!wantedCap.some(versionedCap => enabled.includes(versionedCap))) {
+					missingCaps.push(wantedCap)
+				}
+			} else {
+				if (!enabled.includes(wantedCap)) {
+					missingCaps.push(wantedCap)
+				}
+			}
+		}
+		if (missingCaps.length > 0) {
+			kiwi.state.addMessage(newNetworkEvent.network.serverBuffer(), {
+				time: Date.now(),
+				nick: '*',
+				message: `Missing some capabilities required for plugin-olm: ${JSON.stringify(missingCaps)}`,
+				type: 'error'
+			})
+		}
+	})
 })
 
 kiwi.plugin('olm', async (client /* , log */) => {
