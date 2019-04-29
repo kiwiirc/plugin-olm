@@ -14,6 +14,9 @@
 		"test": "ava"
 	},
 	"dependencies": {
+		"@fortawesome/fontawesome-svg-core": "^1.2.15",
+		"@fortawesome/free-solid-svg-icons": "^5.7.2",
+		"@fortawesome/vue-fontawesome": "^0.1.5",
 		"autobind-decorator": "^2.2.1",
 		"binary-string": "^1.0.0",
 		"buffer": "^5.2.1",
@@ -24,8 +27,9 @@
 		"get-range": "^1.0.0",
 		"haikunator": "^2.0.0",
 		"hsluv": "^0.0.3",
-		"irc-framework": "^4.0.0",
+		"irc-framework": "vith/irc-framework#export-channel",
 		"lodash": "^4.17.11",
+		"olm": "https://matrix.org/packages/npm/olm/olm-3.0.0.tgz",
 		"voca": "^1.4.0",
 		"zen-observable": "^0.8.11"
 	},

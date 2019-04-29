@@ -1,6 +1,3 @@
-// import assert from 'assert' // eslint-disable-line import/no-nodejs-modules
-
-import autobind from 'autobind-decorator'
 import { Message as IrcMessage } from 'irc-framework'
 import { has } from 'lodash'
 import Olm from 'olm'

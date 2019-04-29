@@ -8,6 +8,8 @@ module.exports = {
 	},
 	node: {
 		fs: 'empty',
+		net: 'empty',
+		tls: 'empty',
 	},
 	module: {
 		rules: [
@@ -42,6 +44,6 @@ module.exports = {
 	devServer: {
 		filename: 'plugin-olm.js',
 		host: process.env.HOST || 'localhost',
-		port: 53080,
+		port: process.env.PORT || 53080,
 	},
 }

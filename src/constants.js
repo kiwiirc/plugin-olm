@@ -24,4 +24,6 @@ export const TAGS = {
 
 export const CAPABILITIES = {
 	MESSAGE_TAGS: 'draft/message-tags-0.2',
+	ECHO_MESSAGE: 'echo-message',
+	LABELED_RESPONSE: 'draft/labeled-response',
 }

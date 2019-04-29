@@ -2,27 +2,31 @@ import cbor from 'cbor'
 import { Message as IrcMessage } from 'irc-framework'
 import Olm from 'olm'
 import { COMMANDS, TAGS } from './constants'
-// import { getOtherUsers } from './utils'
 import MegolmMessage from './serialization/types/megolm-message'
 import MegolmPacket from './serialization/types/megolm-packet'
 import { serializeToMessageTagValue } from './serialization/message-tags'
 import MegolmSessionState from './serialization/types/megolm-session-state'
 import autobind from 'autobind-decorator'
-import { toUnpaddedBase64 } from './utils/toUnpaddedBase64'
 import sendMaybeFragmented from './fragmentation/send-maybe-fragmented'
 
 export default class OutboundGroupSession {
 	client
 	channelName
-	// olmBroker
+	olmBroker
 	syncedPeers = new Set()
 	unsyncedPeers = new Set()
 
-	constructor(client, channelName, olmBroker) {
+	constructor(opts /*: { client, channelName, olmBroker, shouldInitiateKeyExchange } */) {
+		const defaultOpts = {
+			shouldInitiateKeyExchange: (/* outboundGroupSession */) => true,
+		}
+		const effectiveOpts = {
+			...defaultOpts,
+			...opts,
+		}
+
 		// store args
-		this.client = client
-		this.channelName = channelName
-		this.olmBroker = olmBroker
+		Object.assign(this, effectiveOpts)
 
 		// initialize session
 		const session = new Olm.OutboundGroupSession()
@@ -39,7 +43,7 @@ export default class OutboundGroupSession {
 
 	@autobind
 	onUserlist(event) {
-		const { channel } = event
+		if (!this.shouldInitiateKeyExchange(this)) return
 
 		let syncStatusChanged = false
 
@@ -66,13 +70,13 @@ export default class OutboundGroupSession {
 
 	@autobind
 	emitSyncStatus() {
-		const syncedCount = this.syncedPeers.size
-		const totalCount = syncedCount + this.unsyncedPeers.size
+		const { syncedPeers, unsyncedPeers } = this
 
 		const payload = {
-			channel: this.channelName,
-			syncedCount,
-			totalCount,
+			channelName: this.channelName,
+			networkName: this.client.network.name,
+			syncedPeers,
+			unsyncedPeers,
 		}
 
 		this.client.emit('megolm.sync.status', payload)
@@ -82,6 +86,8 @@ export default class OutboundGroupSession {
 	onJoin(event) {
 		// ignore own joins
 		if (this.client.user.nick === event.nick) return
+
+		if (!this.shouldInitiateKeyExchange(this)) return
 
 		// ignore already synced peers
 		if (this.syncedPeers.has(event.nick)) return
