@@ -1,5 +1,10 @@
-// eslint-disable-next-line import/no-commonjs, import/no-nodejs-modules
+/* eslint-disable import/no-commonjs, import/no-nodejs-modules */
 const path = require('path')
+const CompressionPlugin = require('compression-webpack-plugin')
+const BrotliPlugin = require('brotli-webpack-plugin')
+const CleanWebpackPlugin = require('clean-webpack-plugin')
+
+const shouldCompress = /\.(js|css|html|svg)(\.map)?$/
 
 // eslint-disable-next-line import/no-commonjs
 module.exports = {
@@ -12,6 +17,19 @@ module.exports = {
 		net: 'empty',
 		tls: 'empty',
 	},
+	plugins: [
+		new CleanWebpackPlugin(),
+		new CompressionPlugin({
+			test: shouldCompress,
+		}),
+		new BrotliPlugin({
+			asset: '[path].br[query]',
+			test: shouldCompress,
+			threshold: 10240,
+			minRatio: 0.8,
+			deleteOriginalAssets: false,
+		}),
+	],
 	module: {
 		rules: [
 			{
