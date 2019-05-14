@@ -5,7 +5,6 @@ import { format } from 'date-fns'
 import Haikunator from 'haikunator'
 import { hsluvToHex } from 'hsluv'
 import { Client as IrcClient } from 'irc-framework'
-import { times } from 'lodash'
 import olmMiddleware from './middleware'
 import { getOtherUsers } from './utils/getOtherUsers'
 
@@ -56,4 +55,7 @@ function createBot() {
 	}
 }
 
-times(2, createBot)
+let n = 2
+while (n-- > 0) {
+	createBot()
+}

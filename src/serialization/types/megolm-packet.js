@@ -4,7 +4,7 @@ import CBOR from '../constants'
 import { toUnpaddedBase64 } from '../../utils/toUnpaddedBase64'
 import { toBuffer } from '../../utils/toBuffer'
 import { toByteArray } from '../../utils/toByteArray'
-import { mapValues } from 'lodash'
+import mapObject from 'map-obj'
 
 export default class MegolmPacket {
 	static CBOR_TAG = CBOR.MEGOLM_PACKET
@@ -36,7 +36,7 @@ export default class MegolmPacket {
 	get base64Pojo() {
 		const { ciphertext, senderKey, sessionID, signature } = this
 		const pojo = { ciphertext, senderKey, sessionID, signature }
-		const b64ed = mapValues(pojo, toUnpaddedBase64)
+		const b64ed = mapObject(pojo, (key, value) => [key, toUnpaddedBase64(value)])
 		return b64ed
 	}
 

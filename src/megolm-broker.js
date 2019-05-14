@@ -1,6 +1,14 @@
 import autobind from 'autobind-decorator'
+import hasOwnProp from 'has-own-prop'
+import Olm from 'olm'
+
+import { COMMANDS, TAGS } from './constants'
 import OutboundGroupSession from './outbound-group-session'
-import { handleMegolmState, handleMegolmMessage, handleMegolmPacket } from './megolm-handlers'
+import cborDecode from './serialization/cbor-decoder'
+import { deserializeFromMessageTagValue } from './serialization/message-tags'
+import MegolmMessage from './serialization/types/megolm-message'
+import MegolmPacket from './serialization/types/megolm-packet'
+import MegolmSessionState from './serialization/types/megolm-session-state'
 
 export default class MegolmBroker {
 	client
@@ -20,14 +28,16 @@ export default class MegolmBroker {
 	}
 
 	@autobind
-	async sendGroupMessage(target, message) {
-		const session = await this.getGroupSession(target)
+	async sendGroupMessage(channelName, message) {
+		const session = await this.getGroupSession(channelName)
 		return session.sendMessage(message)
 	}
 
 	@autobind
-	async getGroupSession(target) {
-		return this.outboundSessions.get(target) || (await this.createGroupSession(target))
+	async getGroupSession(channelName) {
+		return (
+			this.outboundSessions.get(channelName) || (await this.createGroupSession(channelName))
+		)
 	}
 
 	async createGroupSession(channelName) {
@@ -42,32 +52,60 @@ export default class MegolmBroker {
 		return session
 	}
 
-	@autobind
-	rawEventsHandler(command, message, rawLine, client, next) {
-		const {
-			nick: sender,
-			tags,
-			params: [target, text],
-		} = message
-
-		for (const handler of this.rawHandlers) {
-			handler({ sender, tags, command, target, text, client, rawLine })
-		}
-
-		next()
-	}
-
 	registerEventListeners() {
 		const { client, defragmentedMessages } = this
 
-		const messageHandlers = [handleMegolmPacket]
+		defragmentedMessages.subscribe(this.megolmPacketHandler)
 
-		for (const handler of messageHandlers) {
-			defragmentedMessages.subscribe(handler(this))
+		client.on('olm.packet', this.megolmStateHandler)
+		client.on('megolm.packet', this.megolmMessageHandler)
+	}
+
+	@autobind
+	megolmPacketHandler(event) {
+		const {
+			nick: sender,
+			tags,
+			command,
+			params: [target, text],
+		} = event
+
+		if (command !== COMMANDS.TAGMSG) return
+		if (!hasOwnProp(tags, TAGS.MEGOLM_PACKET)) return
+		if (sender === this.client.user.nick) return // ignore own messages
+
+		const { client } = this
+		const packet = deserializeFromMessageTagValue(tags[TAGS.MEGOLM_PACKET])
+		if (!(packet instanceof MegolmPacket)) throw new TypeError('not a MegolmPacket')
+
+		let decryptionResult
+		try {
+			decryptionResult = packet.decrypt(this)
+		} catch (error) {
+			client.emit('megolm.packet.error', { sender, target, error })
+			return
 		}
+		const { plaintext } = decryptionResult
+		const payload = cborDecode(plaintext)
+		const packetEvent = { sender, target, payload }
+		client.emit('megolm.packet', packetEvent)
+	}
 
-		client.on('olm.packet', handleMegolmState(this))
-		client.on('megolm.packet', handleMegolmMessage(this))
+	@autobind
+	megolmStateHandler({ payload /* sender, target */ }) {
+		if (!(payload instanceof MegolmSessionState)) return
+		const { /* messageIndex, */ sessionKeyBase64, sessionIDBase64 } = payload
+		const session = new Olm.InboundGroupSession()
+		session.create(sessionKeyBase64)
+		this.inboundSessions.set(sessionIDBase64, session)
+		console.debug('Created', session, 'from', payload)
+	}
+
+	@autobind
+	megolmMessageHandler({ sender, target, payload }) {
+		if (!(payload instanceof MegolmMessage)) return
+		const { text } = payload
+		this.client.emit('megolm.message', { sender, target, text })
 	}
 
 	addFunctionsToClient() {

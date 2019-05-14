@@ -8,8 +8,8 @@
 	"private": true,
 	"scripts": {
 		"build": "babel src -d lib --source-maps",
-		"build-plugin": "webpack",
-		"dev-plugin": "webpack-dev-server",
+		"build-plugin": "webpack --mode=production",
+		"dev-plugin": "webpack-dev-server --mode=development",
 		"watch": "babel src -d lib --source-maps --watch",
 		"start": "yarn build && node lib/group-demo.js",
 		"test": "ava"
@@ -27,9 +27,10 @@
 		"events": "^3.0.0",
 		"get-range": "^1.0.0",
 		"haikunator": "^2.0.0",
+		"has-own-prop": "^1.0.1",
 		"hsluv": "^0.0.3",
 		"irc-framework": "vith/irc-framework#export-channel",
-		"lodash": "^4.17.11",
+		"map-obj": "^3.1.0",
 		"olm": "https://matrix.org/packages/npm/olm/olm-3.0.0.tgz",
 		"voca": "^1.4.0",
 		"zen-observable": "^0.8.11"
@@ -62,6 +63,7 @@
 		"hard-rejection": "^1.0.0",
 		"prettier": "^1.15.1",
 		"source-map-support": "^0.5.9",
+		"stats-webpack-plugin": "^0.7.0",
 		"style-loader": "^0.23.1",
 		"webpack": "^4.25.1",
 		"webpack-cli": "^3.1.2",

@@ -5,7 +5,6 @@ import chalk from 'chalk'
 import { format } from 'date-fns'
 import Haikunator from 'haikunator'
 import { Client as IrcClient } from 'irc-framework'
-import { times } from 'lodash'
 import olmMiddleware from './middleware'
 import distinctColors from 'distinct-colors'
 
@@ -82,4 +81,7 @@ for (const listener of process.listeners('unhandledRejection')) {
 	process.removeListener('unhandledRejection', listener)
 }
 
-times(count, createBot)
+let n = count
+while (n-- > 0) {
+	createBot()
+}

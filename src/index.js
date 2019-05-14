@@ -14,16 +14,10 @@ kiwi.on('network.new', newNetworkEvent => {
 		CAPABILITIES.ECHO_MESSAGE,
 		[CAPABILITIES.LABELED_RESPONSE, CAPABILITIES.DRAFT_LABELED_RESPONSE],
 	]
-	for (const wantedCap of wantedCaps) {
-		if (wantedCap instanceof Array) {
-			for (const versionedCap of wantedCap) {
-				client.requestCap(versionedCap)
-			}
-		} else {
-			client.requestCap(wantedCap)
-		}
+	for (const wantedCap of wantedCaps.flat()) {
+		client.requestCap(wantedCap)
 	}
-	
+
 	client.on('registered', event => {
 		const missingCaps = []
 		const { /* requested, */ enabled } = client.network.cap
@@ -32,18 +26,18 @@ kiwi.on('network.new', newNetworkEvent => {
 				if (!wantedCap.some(versionedCap => enabled.includes(versionedCap))) {
 					missingCaps.push(wantedCap)
 				}
-			} else {
-				if (!enabled.includes(wantedCap)) {
-					missingCaps.push(wantedCap)
-				}
+			} else if (!enabled.includes(wantedCap)) {
+				missingCaps.push(wantedCap)
 			}
 		}
 		if (missingCaps.length > 0) {
 			kiwi.state.addMessage(newNetworkEvent.network.serverBuffer(), {
 				time: Date.now(),
 				nick: '*',
-				message: `Missing some capabilities required for plugin-olm: ${JSON.stringify(missingCaps)}`,
-				type: 'error'
+				message: `Missing some capabilities required for plugin-olm: ${JSON.stringify(
+					missingCaps,
+				)}`,
+				type: 'error',
 			})
 		}
 	})
