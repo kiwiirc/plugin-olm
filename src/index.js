@@ -1,11 +1,13 @@
 /* global kiwi */
-import Olm from 'olm'
-import olmMiddleware from './middleware'
 import './styles.css'
-import { CAPABILITIES } from './constants'
+
 import { library as fontawesomeLibrary } from '@fortawesome/fontawesome-svg-core'
-import { faLock, faLockOpen, faCircleNotch, faSync } from '@fortawesome/free-solid-svg-icons'
+import { faCircleNotch, faLock, faLockOpen, faSync } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+import Olm from 'olm'
+
+import { CAPABILITIES } from './constants'
+import olmMiddleware from './middleware'
 
 kiwi.on('network.new', newNetworkEvent => {
 	const { ircClient: client } = newNetworkEvent.network
@@ -223,6 +225,13 @@ kiwi.plugin('olm', async (client /* , log */) => {
 				}
 			},
 		)
+
+		ircClient.on('nick', ({ nick, ident, hostname, new_nick, time }) => {
+			if (nick === ircClient.user.nick) return // ignore self
+			const networkName = ircClient.network.name
+			const enabled = encryptionEnabled(networkName, nick)
+			setEncryption(enabled, networkName, new_nick)
+		})
 	}
 
 	client.on('input.command.msg', event => {

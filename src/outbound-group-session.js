@@ -1,13 +1,14 @@
+import autobind from 'autobind-decorator'
 import cbor from 'cbor'
 import { Message as IrcMessage } from 'irc-framework'
 import Olm from 'olm'
+
 import { COMMANDS, TAGS } from './constants'
+import sendMaybeFragmented from './fragmentation/send-maybe-fragmented'
+import { serializeToMessageTagValue } from './serialization/message-tags'
 import MegolmMessage from './serialization/types/megolm-message'
 import MegolmPacket from './serialization/types/megolm-packet'
-import { serializeToMessageTagValue } from './serialization/message-tags'
 import MegolmSessionState from './serialization/types/megolm-session-state'
-import autobind from 'autobind-decorator'
-import sendMaybeFragmented from './fragmentation/send-maybe-fragmented'
 
 export default class OutboundGroupSession {
 	client
@@ -16,7 +17,7 @@ export default class OutboundGroupSession {
 	syncedPeers = new Set()
 	unsyncedPeers = new Set()
 
-	constructor(opts /*: { client, channelName, olmBroker, shouldInitiateKeyExchange } */) {
+	constructor(opts) {
 		const defaultOpts = {
 			shouldInitiateKeyExchange: (/* outboundGroupSession */) => true,
 		}
@@ -33,6 +34,7 @@ export default class OutboundGroupSession {
 		session.create()
 		this.session = session
 		this.client.on('join', this.onJoin)
+		this.client.on('nick', this.onNick)
 		this.shareState()
 	}
 
@@ -95,6 +97,13 @@ export default class OutboundGroupSession {
 		this.unsyncedPeers.add(event.nick)
 		this.emitSyncStatus()
 		this.shareStateWith(event.nick)
+	}
+
+	@autobind
+	onNick({ nick, ident, hostname, new_nick, time }) {
+		this.syncedPeers.delete(nick)
+		this.syncedPeers.add(new_nick)
+		this.emitSyncStatus()
 	}
 
 	async shareStateWith(nick) {

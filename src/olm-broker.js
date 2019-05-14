@@ -1,6 +1,6 @@
 import autobind from 'autobind-decorator'
-import { Message as IrcMessage } from 'irc-framework'
 import hasOwnProp from 'has-own-prop'
+import { Message as IrcMessage } from 'irc-framework'
 import Olm from 'olm'
 
 import { COMMANDS, TAGS } from './constants'
@@ -14,6 +14,7 @@ import OlmMessage from './serialization/types/olm-message'
 import OlmOneTimeKey from './serialization/types/olm-onetimekey'
 import OlmPacket from './serialization/types/olm-packet'
 import { awaitMessage } from './utils/awaitMessage'
+import moveMapEntry from './utils/moveMapEntry'
 
 export default class OlmBroker {
 	client
@@ -139,6 +140,7 @@ export default class OlmBroker {
 		}
 
 		client.on('olm.packet', this.handleOlmMessage)
+		client.on('nick', this.onNick)
 	}
 
 	@autobind
@@ -224,6 +226,14 @@ export default class OlmBroker {
 		const { text } = payload
 
 		this.client.emit('olm.message', { sender, target, text })
+	}
+
+	@autobind
+	onNick({ nick, ident, hostname, new_nick, time }) {
+		const { client, sessions, peerIdentities } = this
+		if (nick === client.user.nick) return // ignore self
+		moveMapEntry(sessions, nick, new_nick)
+		moveMapEntry(peerIdentities, nick, new_nick)
 	}
 
 	addFunctionsToClient() {
