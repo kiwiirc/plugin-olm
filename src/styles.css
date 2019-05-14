@@ -1,6 +1,6 @@
 /* COMMON */
-.kiwi-messagelist-message-privmsg-encrypted > .kiwi-messagelist-body::before,
-.kiwi-messagelist-message-privmsg-decryption-error > .kiwi-messagelist-body::before {
+.kiwi-messagelist-message-privmsg-encrypted .kiwi-messagelist-body::before,
+.kiwi-messagelist-message-privmsg-decryption-error .kiwi-messagelist-body::before {
 	/* .fa */
 	display: inline-block;
 	font: normal normal normal 14px/1 FontAwesome;
@@ -15,10 +15,10 @@
 }
 
 /* ENCRYPTED */
-.kiwi-messagelist-message-privmsg-encrypted > .kiwi-messagelist-body {
+.kiwi-messagelist-message-privmsg-encrypted .kiwi-messagelist-body {
 	background-color: hsla(116, 100%, 50%, 0.19);
 }
-.kiwi-messagelist-message-privmsg-encrypted > .kiwi-messagelist-body::before {
+.kiwi-messagelist-message-privmsg-encrypted .kiwi-messagelist-body::before {
 	/* .fa-lock */
 	content: '\f023';
 
@@ -26,10 +26,10 @@
 }
 
 /* DECRYPTION ERROR */
-.kiwi-messagelist-message-privmsg-decryption-error > .kiwi-messagelist-body {
+.kiwi-messagelist-message-privmsg-decryption-error .kiwi-messagelist-body {
 	background-color: #ff000030;
 }
-.kiwi-messagelist-message-privmsg-decryption-error > .kiwi-messagelist-body::before {
+.kiwi-messagelist-message-privmsg-decryption-error .kiwi-messagelist-body::before {
 	/* .fa-exclamation-triangle */
 	content: '\f071';
 
