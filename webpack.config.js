@@ -36,19 +36,6 @@ module.exports = function(env, argv) {
 						path.resolve(__dirname, 'node_modules', 'olm'),
 					],
 					loader: 'babel-loader',
-					query: {
-						presets: [
-							[
-								'@babel/preset-env',
-								{
-									useBuiltIns: 'usage',
-									targets: {
-										browsers: ['last 1 chrome version'],
-									},
-								},
-							],
-						],
-					},
 				},
 				{
 					test: /\.css$/,
