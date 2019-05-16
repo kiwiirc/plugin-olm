@@ -60,7 +60,6 @@ module.exports = function(env, argv) {
 			host: process.env.HOST || 'localhost',
 			port: process.env.PORT || 53080,
 		},
-		profile: true,
 	}
 
 	if (argv.mode === 'production') {
