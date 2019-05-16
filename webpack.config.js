@@ -26,7 +26,12 @@ module.exports = function(env, argv) {
 		resolve: {
 			symlinks: false,
 		},
-		plugins: [new CleanWebpackPlugin()],
+		plugins: [
+			new CleanWebpackPlugin(),
+			new StatsPlugin('stats.json', {
+				chunkModules: true,
+			}),
+		],
 		module: {
 			rules: [
 				{
@@ -70,9 +75,6 @@ module.exports = function(env, argv) {
 				threshold: 10240,
 				minRatio: 0.8,
 				deleteOriginalAssets: false,
-			}),
-			new StatsPlugin('stats.json', {
-				chunkModules: true,
 			}),
 		]
 	}
