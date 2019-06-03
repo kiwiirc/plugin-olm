@@ -3,19 +3,29 @@ import MegolmBroker from './megolm-broker'
 import OlmBroker from './olm-broker'
 import createDefragmentedMessageSource from './fragmentation/reassembled-messages'
 
-export default function olmMiddleware({ shouldInitiateKeyExchange }) {
-	return function middleware(client /* rawEvents, parsedEvents */) {
+export default function olmMiddleware({ shouldInitiateKeyExchange, olmStorePromise }) {
+	return async function middleware(client /* rawEvents, parsedEvents */) {
+		const store = await olmStorePromise
 		const defragmentedMessages = createDefragmentedMessageSource(client)
-		const olmBroker = new OlmBroker({ client, defragmentedMessages })
+
+		const account = store.accounts.loadOrCreateAccount()
+
+		client.olm = {
+			store,
+		}
+
+		const olmSessionStore = store.olmSessions
+
+		const olmBroker = new OlmBroker({ client, defragmentedMessages, account, olmSessionStore })
 		const megolmBroker = new MegolmBroker({
 			client,
 			olmBroker,
 			defragmentedMessages,
 			shouldInitiateKeyExchange,
-		}) // eslint-disable-line no-unused-vars
+		})
 
 		client.olm = {
-			...(client.olm || {}),
+			...client.olm,
 			olmBroker,
 			megolmBroker,
 		}
@@ -25,7 +35,7 @@ export default function olmMiddleware({ shouldInitiateKeyExchange }) {
 
 	function addFunctionsToClient(client) {
 		client.olm = {
-			...(client.olm || {}),
+			...client.olm,
 			async sendMessage(target, message) {
 				if (target instanceof IrcChannel) {
 					target = target.name

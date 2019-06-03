@@ -32,6 +32,7 @@
 		"irc-framework": "vith/irc-framework#export-channel",
 		"map-obj": "^3.1.0",
 		"olm": "https://matrix.org/packages/npm/olm/olm-3.0.0.tgz",
+		"ow": "^0.13.2",
 		"voca": "^1.4.0",
 		"zen-observable": "^0.8.14"
 	},

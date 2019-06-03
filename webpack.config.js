@@ -9,6 +9,30 @@ const shouldCompress = /\.(js|css|html|svg)(\.map)?$/
 
 // eslint-disable-next-line import/no-commonjs
 module.exports = function(env, argv) {
+	const babelLoaderOptions = {}
+	if (argv.mode !== 'production') {
+		// minimal transpiling for easier debugging in development
+		babelLoaderOptions.options = {
+			presets: [
+				[
+					'@babel/preset-env',
+					{
+						useBuiltIns: 'usage',
+						corejs: 3,
+						targets: { browsers: 'last 1 Chrome versions' },
+					},
+				],
+			],
+			plugins: [
+				['@babel/plugin-proposal-object-rest-spread', { useBuiltIns: true }],
+				['@babel/plugin-syntax-decorators', { legacy: true }],
+				['@babel/plugin-proposal-decorators', { legacy: true }],
+				['@babel/plugin-proposal-class-properties', { loose: true }],
+				// 'babel-plugin-espower',
+			],
+		}
+	}
+
 	const config = {
 		entry: {
 			[require('./package.json').name]: '.',
@@ -41,6 +65,7 @@ module.exports = function(env, argv) {
 						path.resolve(__dirname, 'node_modules', 'olm'),
 					],
 					loader: 'babel-loader',
+					...babelLoaderOptions,
 				},
 				{
 					test: /\.css$/,

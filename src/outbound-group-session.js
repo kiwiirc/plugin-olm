@@ -91,8 +91,9 @@ export default class OutboundGroupSession {
 
 		if (!this.shouldInitiateKeyExchange(this)) return
 
+		// TODO: remove users on part/quit/kick
 		// ignore already synced peers
-		if (this.syncedPeers.has(event.nick)) return
+		// if (this.syncedPeers.has(event.nick)) return
 
 		this.unsyncedPeers.add(event.nick)
 		this.emitSyncStatus()
@@ -112,6 +113,7 @@ export default class OutboundGroupSession {
 		await client.olm.sendObject(nick, state)
 		unsyncedPeers.delete(nick)
 		syncedPeers.add(nick)
+		console.debug(`OutboundGroupSession: shared ${this.channelName} state with ${nick}`)
 
 		emitSyncStatus()
 	}

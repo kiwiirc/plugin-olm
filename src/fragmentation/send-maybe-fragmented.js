@@ -67,7 +67,7 @@ export default async function sendMaybeFragmented(ircMessage, client) {
 
 	// const onlyUnfragmentableBytes = clientTagBytes(unfragmentableTags)
 
-	console.debug(`sending fragmented: @${fragmentableTag}=${fragmentableTagValue}`)
+	// console.debug(`sending fragmented: @${fragmentableTag}=${fragmentableTagValue}`)
 
 	const fragmentGenerator = new FragmentGenerator(fragmentableTagValue)
 	let first = true
@@ -97,7 +97,7 @@ export default async function sendMaybeFragmented(ircMessage, client) {
 		}
 
 		const chunk = fragmentGenerator.next(chunkSize)
-		console.debug('sending chunk', shorten(chunk))
+		// console.debug('sending chunk', shorten(chunk))
 		const chunkMessage = new IrcMessage(command, ...params)
 		chunkMessage.prefix = prefix
 		chunkMessage.nick = nick

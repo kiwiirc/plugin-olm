@@ -19,14 +19,16 @@ import moveMapEntry from './utils/moveMapEntry'
 export default class OlmBroker {
 	client
 	defragmentedMessages
-	localAccount = new Olm.Account()
-	sessions = new Map()
-	peerIdentities = new Map()
+	localAccount
+	peerIdentities
+	sessions
 
-	constructor({ client, defragmentedMessages }) {
+	constructor({ client, defragmentedMessages, account }) {
 		this.client = client
 		this.defragmentedMessages = defragmentedMessages
-		this.localAccount.create()
+		this.localAccount = account
+		this.peerIdentities = client.olm.store.peerIdentities
+		this.sessions = client.olm.store.olmSessions
 		this.registerEventListeners()
 		this.addFunctionsToClient()
 	}
@@ -67,7 +69,12 @@ export default class OlmBroker {
 	}
 
 	async getPeerSession(nick) {
-		return this.sessions.get(nick) || (await this.createPeerSession(nick))
+		const identityKey = this.peerIdentities.get(nick)
+		if (identityKey) {
+			const existingSession = this.sessions.get(identityKey)
+			if (existingSession) return existingSession
+		}
+		return await this.createPeerSession(nick)
 	}
 
 	async createPeerSession(nick) {
@@ -77,16 +84,15 @@ export default class OlmBroker {
 
 		session.create_outbound(this.localAccount, targetIdentityKey, targetOneTimeKey)
 
-		this.sessions.set(nick, session)
+		this.sessions.set(targetIdentityKey, session)
 		return session
 	}
 
 	async getPeerIdentityKey(nick) {
-		const identity = this.peerIdentities.get(nick) || (await this.requestPeerIdentity(nick))
-		return identity.curve25519IdentityKeyBase64
+		return this.peerIdentities.get(nick) || (await this.requestPeerIdentityKey(nick))
 	}
 
-	async requestPeerIdentity(nick) {
+	async requestPeerIdentityKey(nick) {
 		const request = new IrcMessage(COMMANDS.TAGMSG, nick)
 		request.tags[TAGS.OLM_IDENTITY_REQUEST] = true
 		this.client.raw(request.to1459()) // HACK: .to1459()
@@ -99,8 +105,9 @@ export default class OlmBroker {
 		})
 
 		const identity = deserializeFromMessageTagValue(reply.tags[TAGS.OLM_IDENTITY])
-		this.peerIdentities.set(nick, identity)
-		return identity
+		const identityKey = identity.curve25519IdentityKeyBase64
+		this.peerIdentities.set(nick, identityKey)
+		return identityKey
 	}
 
 	async getPeerOneTimeKey(nick) {
@@ -155,8 +162,13 @@ export default class OlmBroker {
 		if (command !== COMMANDS.TAGMSG) return
 		if (!hasOwnProp(tags, TAGS.OLM_PACKET)) return
 
+		if (sender === this.client.user.nick) return // ignore self
+
 		const packet = deserializeFromMessageTagValue(tags[TAGS.OLM_PACKET])
 		if (!(packet instanceof OlmPacket)) throw new TypeError('not an OlmPacket')
+
+		// update nick->senderkey mapping
+		this.peerIdentities.set(sender, packet.senderKeyBase64)
 
 		let payload
 		try {
@@ -205,6 +217,8 @@ export default class OlmBroker {
 		if (command !== COMMANDS.TAGMSG) return
 		if (!hasOwnProp(tags, TAGS.OLM_ONETIMEKEY_REQUEST)) return
 
+		if (sender === this.client.user.nick) return // ignore self
+
 		const response = new IrcMessage(COMMANDS.TAGMSG, sender)
 
 		response.tags[TAGS.OLM_ONETIMEKEY] = serializeToMessageTagValue(
@@ -230,9 +244,9 @@ export default class OlmBroker {
 
 	@autobind
 	onNick({ nick, ident, hostname, new_nick, time }) {
-		const { client, sessions, peerIdentities } = this
+		const { client, peerIdentities } = this
 		if (nick === client.user.nick) return // ignore self
-		moveMapEntry(sessions, nick, new_nick)
+
 		moveMapEntry(peerIdentities, nick, new_nick)
 	}
 
