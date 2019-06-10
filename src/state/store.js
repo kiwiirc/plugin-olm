@@ -26,6 +26,7 @@ export default class Store {
 		)
 	}
 
+	// eslint-disable-next-line class-methods-use-this
 	pickleKey() {
 		return 'pickle key' // TODO: optionally protect with a master password?
 	}

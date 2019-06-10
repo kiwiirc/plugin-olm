@@ -15,8 +15,8 @@ export default class MegolmBroker {
 	defragmentedMessages
 	olmBroker
 	shouldInitiateKeyExchange
-	outboundSessions = new Map() // channelName -> OutboundGroupSession
-	inboundSessions = new Map() // sessionID -> Olm.InboundGroupSession
+	outboundSessions // channelName -> OutboundGroupSession
+	inboundSessions // sessionID -> Olm.InboundGroupSession
 
 	constructor({
 		client,
@@ -28,6 +28,8 @@ export default class MegolmBroker {
 		this.defragmentedMessages = defragmentedMessages
 		this.olmBroker = olmBroker
 		this.shouldInitiateKeyExchange = shouldInitiateKeyExchange
+		this.outboundSessions = client.olm.store.outboundMegolmSessions
+		this.inboundSessions = client.olm.store.inboundMegolmSessions
 		this.registerEventListeners()
 		this.addFunctionsToClient()
 	}

@@ -186,7 +186,7 @@ kiwi.plugin('olm', async (kiwiClient /* , log */) => {
 		const { frameworkClient } = network
 		const olmStorePromise = new Promise(async resolve => {
 			const networkName = await getNetworkNameAsync(frameworkClient)
-			resolve(new KiwiOlmStore(kiwi, networkName))
+			resolve(new KiwiOlmStore(kiwi, networkName, frameworkClient))
 		})
 		frameworkClient.use(olmMiddleware({ shouldInitiateKeyExchange, olmStorePromise }))
 
