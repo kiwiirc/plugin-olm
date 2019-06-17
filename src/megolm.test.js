@@ -13,6 +13,6 @@ import { OlmPacket } from './serialization/types/index'
 })
  */
 
-test('can deserialize olm packet', t => {
+test.skip('can deserialize olm packet', t => {
 	const packet = new OlmPacket(senderKey, encryptionResult)
 })

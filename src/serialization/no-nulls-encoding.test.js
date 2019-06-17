@@ -1,7 +1,7 @@
 import test from 'ava'
 import DeterministicPseudorandombytes from 'deterministic-pseudorandombytes'
 import NoNullsEncoding from './no-nulls-encoding'
-import { toByteArray } from '../utils'
+import { toByteArray } from '../utils/toByteArray'
 
 const TEST_DATA_COUNT = 2
 

@@ -10,8 +10,10 @@ test('null bytes can round trip through binary string', t => {
 	t.deepEqual(buf, reBuf)
 })
 
-test('null bytes can round trip through olm', t => {
+test.failing('null bytes can round trip through olm', async t => {
 	t.plan(1)
+
+	await Olm.init()
 
 	const alice = new Olm.Account()
 	const bob = new Olm.Account()
