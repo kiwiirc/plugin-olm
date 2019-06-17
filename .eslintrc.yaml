@@ -5,3 +5,5 @@ env:
 parser: babel-eslint
 extends:
   - esnext
+rules:
+  import/prefer-default-export: 0
