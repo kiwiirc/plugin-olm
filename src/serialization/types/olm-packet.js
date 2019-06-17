@@ -37,7 +37,12 @@ export default class OlmPacket {
 			encryptionResult: { type, body },
 		} = this
 		const session = olmContext.getOrCreateSessionFromPacket(this)
-		const decryptedBytes = session.decrypt(type, body, Uint8Array)
+		let decryptedBytes
+		try {
+			decryptedBytes = session.decrypt(type, body, Uint8Array)
+		} catch (err) {
+			console.error('Failed to decrypt Olm Packet:', err)
+		}
 		const deserialized = cborDecode(decryptedBytes)
 		return deserialized
 	}
