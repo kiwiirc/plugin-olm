@@ -1,11 +1,15 @@
-import { partitionObject } from '../utils/partitionObject'
-import { toUnpaddedBase64 } from '../utils/toUnpaddedBase64'
-import { awaitMessage } from '../utils/awaitMessage'
 import IrcMessage from 'irc-framework/src/ircmessage'
-import FragmentGenerator from './fragment-generator'
+
 import { TAGS } from '../constants'
-import { FRAGMENTABLE_TAGS } from './common'
+import { awaitMessage } from '../utils/awaitMessage'
+import { getMessageID } from '../utils/getMessageID'
+import { partitionObject } from '../utils/partitionObject'
 import { shorten } from '../utils/shorten'
+import { toUnpaddedBase64 } from '../utils/toUnpaddedBase64'
+import { FRAGMENTABLE_TAGS } from './common'
+import FragmentGenerator from './fragment-generator'
+import { getLabel } from '../utils/getLabel'
+import { setLabel } from '../utils/setLabel'
 
 // IRCv3.3 Message Tags https://ircv3.net/specs/core/message-tags-3.3.html#size-limit
 // const CLIENT_TAGS_MAX_LENGTH = 4096
@@ -42,7 +46,6 @@ function generateLabelID() {
 	return toUnpaddedBase64(randomBytes)
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export default async function sendMaybeFragmented(ircMessage, client) {
 	// FIXME: bytes vs characters?
 
@@ -74,12 +77,14 @@ export default async function sendMaybeFragmented(ircMessage, client) {
 	let previousMsgID
 	while (fragmentGenerator.more) {
 		// use supplied label for first fragment
-		const labelID = (first ? unfragmentableTags[TAGS.LABEL] : undefined) || generateLabelID()
+		const labelID =
+			(first ? getLabel(unfragmentableTags, client) : undefined) || generateLabelID()
 
 		const chunkUnfragmentableTags = {
 			...unfragmentableTags,
-			[TAGS.LABEL]: labelID,
 		}
+		setLabel(chunkUnfragmentableTags, client, labelID)
+
 		if (previousMsgID) {
 			chunkUnfragmentableTags[TAGS.PREVIOUS_FRAGMENT] = previousMsgID
 		}
@@ -110,15 +115,12 @@ export default async function sendMaybeFragmented(ircMessage, client) {
 			chunkMessage.tags[TAGS.FRAGMENTED] = true
 		}
 
-		const echoPromise = awaitMessage(
-			client,
-			msg => Object.keys(msg.tags).includes(TAGS.LABEL) && msg.tags[TAGS.LABEL] === labelID,
-		)
+		const echoPromise = awaitMessage(client, msg => getLabel(msg.tags, client) === labelID)
 
 		client.raw(chunkMessage.to1459()) // HACK
 
 		const echo = await echoPromise
-		previousMsgID = echo.tags[TAGS.MSGID]
+		previousMsgID = getMessageID(echo.tags, client)
 		if (!previousMsgID) {
 			throw new Error('Echoed message fragment has no Message ID.')
 		}

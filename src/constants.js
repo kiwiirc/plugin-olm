@@ -16,10 +16,13 @@ export const TAGS = {
 	FRAGMENTED: '+kiwi/frag',
 	PREVIOUS_FRAGMENT: '+kiwi/prev-frag',
 
-	MSGID: 'draft/msgid',
-	LABEL: 'draft/label',
-	REPLY: 'draft/reply',
+	MSGID: 'msgid',
+	LABEL: 'label',
+	REPLY: '+draft/reply',
 	TIME: 'time',
+
+	DRAFT_MSGID: 'draft/msgid',
+	DRAFT_LABEL: 'draft/label',
 }
 
 export const CAPABILITIES = {

@@ -15,6 +15,7 @@ import OlmOneTimeKey from './serialization/types/olm-onetimekey'
 import OlmPacket from './serialization/types/olm-packet'
 import { awaitMessage } from './utils/awaitMessage'
 import moveMapEntry from './utils/moveMapEntry'
+import { getMessageID } from './utils/getMessageID'
 
 export default class OlmBroker {
 	client
@@ -199,9 +200,12 @@ export default class OlmBroker {
 
 		const response = new IrcMessage(COMMANDS.TAGMSG, sender)
 		response.tags[TAGS.OLM_IDENTITY] = serializeToMessageTagValue(identity)
-		if (hasOwnProp(tags, TAGS.MSGID)) {
-			response.tags[TAGS.REPLY] = tags[TAGS.MSGID]
+
+		const msgid = getMessageID(event.tags, this.client)
+		if (msgid) {
+			response.tags[TAGS.REPLY] = msgid
 		}
+
 		this.client.raw(response.to1459()) // HACK: .to1459()
 	}
 
@@ -225,8 +229,9 @@ export default class OlmBroker {
 			OlmOneTimeKey.generate(this.localAccount),
 		)
 
-		if (hasOwnProp(tags, TAGS.MSGID)) {
-			response.tags[TAGS.REPLY] = tags[TAGS.MSGID]
+		const msgid = getMessageID(event.tags, this.client)
+		if (msgid) {
+			response.tags[TAGS.REPLY] = msgid
 		}
 
 		this.client.raw(response.to1459()) // HACK: .to1459()

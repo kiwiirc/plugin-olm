@@ -2,6 +2,7 @@ import Observable from 'zen-observable'
 import { merge } from 'zen-observable/extras'
 import { TAGS } from '../constants'
 import { FRAGMENTABLE_TAGS } from './common'
+import { getMessageID } from '../utils/getMessageID'
 
 export default function createDefragmentedMessageSource(client) {
 	const allMessages = messageSource(client)
@@ -9,7 +10,7 @@ export default function createDefragmentedMessageSource(client) {
 	const allFragments = allMessages.filter(isFragment)
 	const unfragmented = allMessages.filter(message => !isFragment(message))
 
-	const fragmentSets = groupFragments(allFragments)
+	const fragmentSets = groupFragments(allFragments, client)
 
 	const defragmented = new Observable(defragmentedObserver => {
 		fragmentSets.subscribe(set => {
@@ -48,7 +49,7 @@ function isFragment(message) {
 	return isFragmented || hasPreviousFragment
 }
 
-function groupFragments(fragmentSource) {
+function groupFragments(fragmentSource, frameworkClient) {
 	return new Observable(fragmentSetsObserver => {
 		fragmentSource.subscribe(fragmentMessage => {
 			const isInitialFragment = !Object.keys(fragmentMessage.tags).includes(
@@ -59,7 +60,7 @@ function groupFragments(fragmentSource) {
 			}
 
 			const fragmentSet = new Observable(fragmentSetObserver => {
-				let lastFragmentID = fragmentMessage.tags[TAGS.MSGID]
+				let lastFragmentID = getMessageID(fragmentMessage.tags, frameworkClient)
 				if (!lastFragmentID) {
 					return fragmentSetsObserver.error(
 						new Error('Received initial fragment with no Message ID'),
@@ -72,7 +73,7 @@ function groupFragments(fragmentSource) {
 					if (previousFragmentID !== lastFragmentID) {
 						return
 					}
-					lastFragmentID = anotherFragment.tags[TAGS.MSGID]
+					lastFragmentID = getMessageID(anotherFragment.tags, frameworkClient)
 					if (!lastFragmentID) {
 						return fragmentSetObserver.error(
 							new Error('Received continuation fragment with no Message ID'),
