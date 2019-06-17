@@ -34,7 +34,10 @@ export default class BufferStore extends Store {
 		ow(bufferName, 'bufferName', ow.string.nonEmpty)
 
 		this.setEncryption(true, bufferName)
-		await this.initGroupSession(bufferName)
+
+		if (this.getNetwork().isChannelName(bufferName)) {
+			await this.initGroupSession(bufferName)
+		}
 	}
 
 	disableEncryption(bufferName) {
