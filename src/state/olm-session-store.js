@@ -19,7 +19,7 @@ export default class OlmSessionStore extends Store {
 	getPickledSession(senderKeyBase64) {
 		ow(senderKeyBase64, 'senderKeyBase64', ow.string.nonEmpty)
 
-		const pickledSession = this.networkScopedSetting(['sessions', senderKeyBase64])
+		const pickledSession = this.networkScopedSetting(['sessions', 'olm', senderKeyBase64])
 
 		if (!pickledSession) return
 
@@ -33,7 +33,7 @@ export default class OlmSessionStore extends Store {
 		ow(session, 'session', ow.object.instanceOf(Olm.Session))
 
 		const pickledSession = session.pickle(this.pickleKey())
-		this.networkScopedSetting(['sessions', senderKeyBase64], pickledSession)
+		this.networkScopedSetting(['sessions', 'olm', senderKeyBase64], pickledSession)
 
 		console.debug(`OlmSessionStore.set: saved: ${senderKeyBase64}`)
 	}
