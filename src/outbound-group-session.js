@@ -14,7 +14,7 @@ export default class OutboundGroupSession {
 	client
 	channelName
 	olmBroker
-	syncedPeers = new Set()
+	syncedPeers /* = new Set() */
 	unsyncedPeers = new Set()
 
 	constructor(opts) {
@@ -28,6 +28,8 @@ export default class OutboundGroupSession {
 
 		// store args
 		Object.assign(this, effectiveOpts)
+
+		this.syncedPeers = this.client.olm.store.createMegolmSyncedUsersStore(this.channelName)
 
 		// initialize session
 		const session = new Olm.OutboundGroupSession()
@@ -94,6 +96,10 @@ export default class OutboundGroupSession {
 		// TODO: remove users on part/quit/kick
 		// ignore already synced peers
 		// if (this.syncedPeers.has(event.nick)) return
+
+		if (this.syncedPeers.has(event.nick)) {
+			return
+		}
 
 		this.unsyncedPeers.add(event.nick)
 		this.emitSyncStatus()
