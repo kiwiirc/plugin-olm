@@ -19,7 +19,16 @@ export default class PeerIdentityStore extends Store {
 		ow(nick, 'nick', ow.string.nonEmpty)
 		ow(peerIdentityKey, 'peerIdentityKey', ow.string.nonEmpty)
 
+		const existingIdentity = this.get(nick)
+		if (existingIdentity && existingIdentity !== peerIdentityKey) {
+			console.warn(
+				`Overwriting stored peerIdentityKey for ${nick}: ${existingIdentity} => ${peerIdentityKey}`,
+			)
+		}
+
 		this.networkScopedSetting(['peerIdentities', nick], peerIdentityKey)
+
+		console.debug(`PeerIdentityStore.set: ${nick} => ${peerIdentityKey}`)
 	}
 
 	delete(nick) {

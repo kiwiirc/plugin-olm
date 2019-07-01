@@ -27,8 +27,6 @@ export default class KiwiOlmStore extends Store {
 	}
 
 	createMegolmSyncedUsersStore(channelName) {
-		return new Set()
-		// TODO: fix session bug and re-enable
 		return new MegolmSyncedUsersStore(this.kiwi, this.networkName, channelName)
 	}
 }

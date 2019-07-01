@@ -1,5 +1,3 @@
-import ow from 'ow'
-
 import Store from './store'
 
 export default class MegolmSyncedUsersStore extends Store {

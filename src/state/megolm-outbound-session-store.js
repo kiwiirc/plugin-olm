@@ -1,3 +1,4 @@
+import Olm from 'olm'
 import ow from 'ow'
 
 import OutboundGroupSession from '../outbound-group-session'
@@ -34,11 +35,15 @@ export default class MegolmOutboundSessionStore extends Store {
 		const { olmBroker, megolmBroker } = client.olm
 		const { shouldInitiateKeyExchange } = megolmBroker
 
+		const session = new Olm.OutboundGroupSession()
+		session.unpickle(this.pickleKey(), pickled)
+
 		const liveSession = new OutboundGroupSession({
 			client,
 			channelName,
 			olmBroker,
 			shouldInitiateKeyExchange,
+			session,
 		})
 
 		this.liveSessions.set(channelName, liveSession)

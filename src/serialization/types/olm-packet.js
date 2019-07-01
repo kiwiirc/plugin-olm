@@ -27,22 +27,18 @@ export default class OlmPacket {
 
 		const encryptionResult = session.encrypt(payloadBuf)
 
+		// save updated session
+		const peerIdentityKey = await olmContext.getPeerIdentityKey(target)
+		olmContext.sessions.updateSession(peerIdentityKey, session)
+		console.debug('Resaved session after use', { peerIdentityKey })
+
 		const senderKey = olmContext.getOwnCurve25519IdentityKey()
 		const packet = new OlmPacket(senderKey, encryptionResult)
 		return packet
 	}
 
 	decrypt(olmContext) {
-		const {
-			encryptionResult: { type, body },
-		} = this
-		const session = olmContext.getOrCreateSessionFromPacket(this)
-		let decryptedBytes
-		try {
-			decryptedBytes = session.decrypt(type, body, Uint8Array)
-		} catch (err) {
-			console.error('Failed to decrypt Olm Packet:', err)
-		}
+		const decryptedBytes = olmContext.sessions.decryptPacket(this, olmContext)
 		const deserialized = cborDecode(decryptedBytes)
 		return deserialized
 	}

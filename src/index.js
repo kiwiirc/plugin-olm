@@ -313,3 +313,20 @@ function shouldInitiateKeyExchange(outboundGroupSession) {
 	const should = client.olm.store.buffers.isEncryptionEnabled(channelName)
 	return should
 }
+
+// also output console.log/etc calls to the *raw buffer if it exists
+// WARNING: this breaks the links to the calling line in browser devtools
+/* for (const method of ['log', 'error', 'warn', 'debug']) {
+	const old = window.console[method]
+	// eslint-disable-next-line no-loop-func
+	window.console[method] = (...args) => {
+		old(...args)
+		kiwi.state.addMessage(currentNetworkState().bufferByName('*raw'), {
+			time: Date.now(),
+			nick: '*',
+			message: String(...args),
+			// type: 'error',
+		})
+	}
+}
+ */

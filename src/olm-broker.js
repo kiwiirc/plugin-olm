@@ -46,33 +46,10 @@ export default class OlmBroker {
 		return this.getOwnIdentityKeys().curve25519
 	}
 
-	getOrCreateSessionFromPacket(olmPacket) {
-		const { sessions } = this
-		const { senderKeyBase64 } = olmPacket
-
-		const session = sessions.get(senderKeyBase64)
-
-		if (session) {
-			return session
-		}
-
-		// unknown session
-
-		if (olmPacket.encryptionResult.type !== 0) {
-			// message is part of a pre-existing session that we're missing
-			// TODO: renegoatate session when error occurs
-			throw new Error('Cannot decrypt message: unknown session continuation')
-		}
-
-		const newSession = olmPacket.createInboundSession(this)
-		sessions.set(senderKeyBase64, newSession)
-		return newSession
-	}
-
 	async getPeerSession(nick) {
 		const identityKey = this.peerIdentities.get(nick)
 		if (identityKey) {
-			const existingSession = this.sessions.get(identityKey)
+			const existingSession = this.sessions.getLatestSession(identityKey)
 			if (existingSession) return existingSession
 		}
 		return await this.createPeerSession(nick)
@@ -85,7 +62,11 @@ export default class OlmBroker {
 
 		session.create_outbound(this.localAccount, targetIdentityKey, targetOneTimeKey)
 
-		this.sessions.set(targetIdentityKey, session)
+		this.sessions.addSession(targetIdentityKey, session)
+
+		const sessionID = session.session_id()
+		console.debug('Created new outbound olm session', { targetIdentityKey, sessionID })
+
 		return session
 	}
 
@@ -175,6 +156,7 @@ export default class OlmBroker {
 		try {
 			payload = packet.decrypt(this)
 		} catch (error) {
+			console.error('Failed to decrypt packet', { packet, error })
 			this.client.emit('olm.packet.error', { sender, target, error })
 			return
 		}

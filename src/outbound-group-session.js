@@ -16,25 +16,27 @@ export default class OutboundGroupSession {
 	olmBroker
 	syncedPeers /* = new Set() */
 	unsyncedPeers = new Set()
+	session
 
-	constructor(opts) {
-		const defaultOpts = {
-			shouldInitiateKeyExchange: (/* outboundGroupSession */) => true,
-		}
-		const effectiveOpts = {
-			...defaultOpts,
-			...opts,
-		}
-
-		// store args
-		Object.assign(this, effectiveOpts)
+	constructor({
+		client,
+		channelName,
+		olmBroker,
+		shouldInitiateKeyExchange = (/* outboundGroupSession */) => true,
+		session = () => {
+			const session = new Olm.OutboundGroupSession()
+			session.create()
+			return session
+		},
+	}) {
+		this.client = client
+		this.channelName = channelName
+		this.olmBroker = olmBroker
+		this.shouldInitiateKeyExchange = shouldInitiateKeyExchange
+		this.session = session
 
 		this.syncedPeers = this.client.olm.store.createMegolmSyncedUsersStore(this.channelName)
 
-		// initialize session
-		const session = new Olm.OutboundGroupSession()
-		session.create()
-		this.session = session
 		this.client.on('join', this.onJoin)
 		this.client.on('nick', this.onNick)
 		this.shareState()

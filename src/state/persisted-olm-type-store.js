@@ -36,10 +36,10 @@ export default class PersistedOlmTypeStore extends Store {
 		const pickled = val.pickle(this.pickleKey())
 		this.networkScopedSetting([this.settingKey, key], pickled)
 
-		console.debug(
-			`PersistedOlmTypeStore: saved ${this.olmTypeConstructor.name} for ${
-				this.keyName
-			} ${key}: ${pickled}`,
-		)
+		console.debug(`PersistedOlmTypeStore: saved ${this.olmTypeConstructor.name}:`, {
+			keyName: this.keyName,
+			key,
+			pickled,
+		})
 	}
 }
