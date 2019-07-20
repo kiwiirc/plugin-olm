@@ -23,11 +23,11 @@ export default class OutboundGroupSession {
 		channelName,
 		olmBroker,
 		shouldInitiateKeyExchange = (/* outboundGroupSession */) => true,
-		session = () => {
+		session = (() => {
 			const session = new Olm.OutboundGroupSession()
 			session.create()
 			return session
-		},
+		})(),
 	}) {
 		this.client = client
 		this.channelName = channelName

@@ -11,6 +11,7 @@ export const TAGS = {
 	OLM_ONETIMEKEY: '+kiwi/olm-onetimekey',
 
 	MEGOLM_STATE: '+kiwi/megolm-state',
+	MEGOLM_STATE_REQUEST: '+kiwi/megolm-state-request',
 	MEGOLM_PACKET: '+kiwi/megolm-packet',
 
 	FRAGMENTED: '+kiwi/frag',

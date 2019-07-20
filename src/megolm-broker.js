@@ -1,5 +1,6 @@
 import autobind from 'autobind-decorator'
 import hasOwnProp from 'has-own-prop'
+import { Message as IrcMessage } from 'irc-framework'
 import Olm from 'olm'
 
 import { COMMANDS, TAGS } from './constants'
@@ -66,6 +67,8 @@ export default class MegolmBroker {
 
 		client.on('olm.packet', this.megolmStateHandler)
 		client.on('megolm.packet', this.megolmMessageHandler)
+		client.on('megolm.packet.error', this.megolmPacketErrorHandler)
+		client.connection.on('message', this.megolmStateRequestHandler)
 	}
 
 	@autobind
@@ -113,6 +116,30 @@ export default class MegolmBroker {
 		if (!(payload instanceof MegolmMessage)) return
 		const { text } = payload
 		this.client.emit('megolm.message', { sender, target, text })
+	}
+
+	@autobind
+	megolmPacketErrorHandler({ sender, target, error }) {
+		// request megolm state
+		const ircMessage = new IrcMessage(COMMANDS.TAGMSG, sender)
+		ircMessage.tags[TAGS.MEGOLM_STATE_REQUEST] = target
+		return this.client.raw(ircMessage.to1459()) // HACK
+	}
+
+	@autobind
+	async megolmStateRequestHandler(event) {
+		const {
+			nick: sender,
+			tags,
+			command,
+			params: [target, text],
+		} = event
+
+		if (!hasOwnProp(tags, TAGS.MEGOLM_STATE_REQUEST)) return
+
+		console.debug('Servicing MEGOLM_STATE_REQUEST', { sender, target })
+		const groupSess = await this.getGroupSession(tags[TAGS.MEGOLM_STATE_REQUEST])
+		groupSess.shareStateWith(sender)
 	}
 
 	addFunctionsToClient() {
