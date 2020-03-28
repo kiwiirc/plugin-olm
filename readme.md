@@ -33,13 +33,17 @@ See [protocol.md] for protocol description and more technical background.
     offline
 -   ...
 
-## Deploying demo
+## Demo
 
 ```console
 $ git clone https://github.com/kiwiirc/plugin-olm.git
 $ cd plugin-olm/docker
 $ docker-compose up
 ```
+
+Open https://0.0.0.0:30000 in a browser.
+
+Click the lock icon in the bottom right to toggle encryption.
 
 [kiwiirc]: https://github.com/kiwiirc/kiwiirc
 [message tags]: https://ircv3.net/specs/core/message-tags-3.2.html
