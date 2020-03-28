@@ -25,37 +25,41 @@ RUN yarn build
 ###
 ### archlinux with fixed emscripten
 ###
-FROM archlinux AS archlinux-with-fixed-emscripten
-RUN pacman --noconfirm -Syu --needed base-devel git sudo
-RUN pacman --noconfirm -Syu --needed nodejs python binaryen cmake ninja
-RUN pacman --noconfirm -Syu --needed npm
-
-# configure sudo
-RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/01_wheel_nopasswd
-
-# add non-root user
-RUN useradd -m -G wheel user
-USER user
-
-RUN git clone https://github.com/vith/archlinux-emscripten-PKGBUILD.git /home/user/archlinux-emscripten-PKGBUILD
-WORKDIR /home/user/archlinux-emscripten-PKGBUILD
-RUN makepkg
-
-USER root
-RUN pacman --noconfirm -U *.pkg.tar.*
+# FROM archlinux AS archlinux-with-fixed-emscripten
+# RUN pacman --noconfirm -Syu --needed base-devel git sudo
+# RUN pacman --noconfirm -Syu --needed nodejs python binaryen cmake ninja
+# RUN pacman --noconfirm -Syu --needed npm
+#
+# # configure sudo
+# RUN echo "%wheel ALL=(ALL) NOPASSWD: ALL" | tee /etc/sudoers.d/01_wheel_nopasswd
+#
+# # add non-root user
+# RUN useradd -m -G wheel user
+# USER user
+#
+# RUN git clone https://github.com/vith/archlinux-emscripten-PKGBUILD.git /home/user/archlinux-emscripten-PKGBUILD
+# WORKDIR /home/user/archlinux-emscripten-PKGBUILD
+# RUN makepkg
+#
+# USER root
+# RUN pacman --noconfirm -U *.pkg.tar.*
 
 
 
 ###
 ### build olm
 ###
-FROM archlinux-with-fixed-emscripten AS build-olm
-# RUN pacman --noconfirm -Syu # cachebreak
+# FROM archlinux-with-fixed-emscripten AS build-olm
+FROM archlinux AS build-olm
+RUN pacman --noconfirm -Syu
+ADD https://github.com/vith/archlinux-emscripten-PKGBUILD/releases/download/fixed-closure/emscripten-1.39.10-2-x86_64.pkg.tar.zst /root
+RUN pacman --noconfirm -U /root/emscripten-1.39.10-2-x86_64.pkg.tar.zst
+RUN pacman --noconfirm -S --needed git base-devel
 # RUN pacman --noconfirm -Syu --needed base-devel emscripten perl-json cmake jre-openjdk-headless nodejs npm git
 # RUN pacman --noconfirm -Scc
 # cause /etc/profile.d/emscripten.sh to be sourced
 # emcc prints an intro message the first time it runs instead of doing the build
-RUN bash -l -c emcc
+RUN bash -l -c "emcc"
 RUN git clone https://github.com/kiwiirc/olm.git --branch kiwi-fork /root/olm/
 WORKDIR /root/olm/
 # RUN npm install --no-package-lock
