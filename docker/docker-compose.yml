@@ -1,0 +1,23 @@
+version: '2'
+services:
+  webircgateway:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./webircgateway.conf:/opt/irc/config.conf
+      # untrusted testing cert:
+      # openssl req -x509 -newkey rsa:4096 -keyout server.key -out server.crt -days 365 -nodes -subj '/CN=0.0.0.0'
+      - ./server.key:/opt/irc/server.key
+      - ./server.crt:/opt/irc/server.crt
+      - ./kiwiirc-client.config.json:/opt/irc/www/static/config.json
+    ports:
+      - '30000:80'
+      - '30001:443'
+    restart: unless-stopped
+
+  ircd:
+    image: oragono/oragono
+    expose:
+      - 6667
+    restart: unless-stopped

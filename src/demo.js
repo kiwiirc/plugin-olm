@@ -16,7 +16,7 @@ const seconds = 1000
 
 function createBot() {
 	const client = new IrcClient()
-	client.use(olmMiddleware())
+	client.use(olmMiddleware({}))
 
 	const color = chalk.hex(hsluvToHex([Math.random() * 360, 75, 50]))
 

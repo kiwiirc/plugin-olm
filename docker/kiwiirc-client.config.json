@@ -1,0 +1,37 @@
+{
+    "windowTitle": "Kiwi IRC - The web IRC client",
+    "startupScreen": "welcome",
+    "kiwiServer": "/webirc/kiwiirc/",
+    "restricted": true,
+    "theme": "GrayFox",
+    "themes": [
+        { "name": "Default", "url": "static/themes/default" },
+        { "name": "Dark", "url": "static/themes/dark" },
+        { "name": "Coffee", "url": "static/themes/coffee" },
+        { "name": "GrayFox", "url": "static/themes/grayfox" },
+        { "name": "Nightswatch", "url": "static/themes/nightswatch" },
+        { "name": "Osprey", "url": "static/themes/osprey" },
+        { "name": "Radioactive", "url": "static/themes/radioactive" },
+        { "name": "Sky", "url": "static/themes/sky" }
+    ],
+    "startupOptions": {
+        "server": "ircd",
+        "port": 6667,
+        "tls": false,
+        "direct": false,
+        "channel": "#default",
+        "nick": "user?",
+        "autoConnect": true
+    },
+    "warnOnExit": false,
+    "showRaw": true,
+    "embedly": {
+        "key": ""
+    },
+    "plugins": [
+        {
+            "name": "olm",
+            "url": "/plugin-olm.js"
+        }
+    ]
+}
