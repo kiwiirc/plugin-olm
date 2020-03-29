@@ -41,7 +41,7 @@ $ cd plugin-olm/docker
 $ docker-compose up
 ```
 
-Open https://0.0.0.0:30000 in a browser.
+Open http://0.0.0.0:30000 in a browser.
 
 Click the lock icon in the bottom right to toggle encryption.
 
